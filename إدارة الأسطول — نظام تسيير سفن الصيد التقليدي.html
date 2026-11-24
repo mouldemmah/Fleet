@@ -1,0 +1,3918 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f2942" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>إدارة الأسطول — سفن الصيد التقليدي</title>
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & STRICT ZERO-SCROLL BASE (ZERO EXTERNAL RESOURCES)
+       ========================================================================== */
+    :root {
+      --bg-app: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-subtle: #f8fafc;
+      --border-card: #e2e8f0;
+      --navy-start: #0f2942;
+      --navy-end: #163a5f;
+      --cyan: #0ea5e9;
+      --cyan-dark: #0284c7;
+      --cyan-soft: #e0f2fe;
+      --emerald: #10b981;
+      --emerald-dark: #059669;
+      --emerald-soft: #d1fae5;
+      --amber: #f59e0b;
+      --amber-dark: #b45309;
+      --amber-soft: #fef3c7;
+      --red: #ef4444;
+      --red-dark: #dc2626;
+      --red-soft: #fee2e2;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 8px;
+      --shadow-card: 0 2px 8px rgba(15, 41, 66, 0.06);
+      --shadow-hero: 0 8px 18px -6px rgba(15, 41, 66, 0.34);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100dvh;
+      max-height: 100dvh;
+      width: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background-color: #cbd5e1;
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
+    /* ==========================================================================
+       2. FIXED APP SHELL (ZERO VERTICAL SCROLLING)
+       ========================================================================== */
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-height: 100dvh;
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      background-color: var(--bg-app);
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 36px rgba(15, 23, 42, 0.18);
+    }
+
+    @media (min-width: 561px) {
+      body {
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .app-shell {
+        height: calc(100dvh - 16px);
+        max-height: calc(100dvh - 16px);
+        border-radius: 22px;
+        border: 1px solid #94a3b8;
+      }
+    }
+
+    /* Compact Fixed Top Header (~48px) */
+    .app-header {
+      height: 48px;
+      min-height: 48px;
+      background: linear-gradient(135deg, var(--navy-start) 0%, var(--navy-end) 100%);
+      color: #ffffff;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(15, 41, 66, 0.22);
+      z-index: 20;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .header-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .header-ship-select {
+      background-color: rgba(14, 165, 233, 0.22);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #e0f2fe;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      outline: none;
+      cursor: pointer;
+      min-width: 0;
+      max-width: 118px;
+      text-overflow: ellipsis;
+    }
+    .header-ship-select option {
+      background-color: var(--navy-start);
+      color: #ffffff;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .hdr-quick-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .hdr-quick-btn:active { transform: scale(0.95); }
+
+    /* Sync Badge */
+    .sync-badge-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
+      max-width: 122px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sync-badge-btn:active { transform: scale(0.95); }
+    .sync-badge-btn.badge-green {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: #d1fae5;
+    }
+    .sync-badge-btn.badge-amber {
+      background: rgba(245, 158, 11, 0.22);
+      border-color: rgba(251, 191, 36, 0.55);
+      color: #fef3c7;
+    }
+    .sync-badge-btn.badge-gray {
+      background: rgba(148, 163, 184, 0.22);
+      border-color: rgba(203, 213, 225, 0.45);
+      color: #e2e8f0;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-green .status-dot { background-color: #34d399; }
+    .badge-amber .status-dot {
+      background-color: #fbbf24;
+      animation: pulseDot 1.1s infinite ease-in-out;
+    }
+    .badge-gray .status-dot { background-color: #94a3b8; }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.65; }
+    }
+
+    /* Main Content Container (STRICTLY NO VERTICAL SCROLL) */
+    .app-main {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+    }
+
+    .tab-view {
+      display: none;
+    }
+    .tab-view.active {
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      gap: 6px;
+    }
+
+    /* Compact Fixed Bottom Navigation Bar (~60px, 7 Tabs) */
+    .bottom-nav {
+      height: 60px;
+      min-height: 60px;
+      background-color: #ffffff;
+      border-top: 1px solid var(--border-card);
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 4px 3px calc(4px + env(safe-area-inset-bottom, 0px));
+      gap: 2px;
+      flex-shrink: 0;
+      box-shadow: 0 -3px 12px rgba(15, 41, 66, 0.08);
+      z-index: 25;
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      padding: 3px 1px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      color: var(--text-muted);
+      position: relative;
+      transition: background-color 0.14s, transform 0.1s;
+    }
+    .nav-tab-btn:active { transform: scale(0.94); }
+    .nav-tab-btn.active {
+      background-color: var(--cyan-soft);
+      color: var(--navy-start);
+    }
+    .nav-tab-btn.active::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 3px;
+      border-radius: 0 0 4px 4px;
+      background-color: var(--cyan);
+    }
+
+    .nav-icon-wrap {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .nav-tab-btn.active .nav-label {
+      font-weight: 900;
+      color: var(--navy-start);
+    }
+
+    /* ==========================================================================
+       3. COMPACT CARDS, GRIDS, TABLES & PAGINATION
+       ========================================================================== */
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 9px 10px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .flex-fill-card {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, var(--navy-start) 0%, var(--navy-end) 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 10px 12px;
+      box-shadow: var(--shadow-hero);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      left: -24px;
+      top: -24px;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.14);
+      pointer-events: none;
+    }
+
+    .hero-label { font-size: 10.5px; font-weight: 700; color: #bae6fd; }
+    .hero-value { font-size: 21px; font-weight: 900; line-height: 1.15; }
+    .hero-currency { font-size: 11px; font-weight: 800; color: #38bdf8; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .kpi-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 7px 9px;
+      box-shadow: var(--shadow-card);
+    }
+    .kpi-title { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+    .kpi-num { font-size: 14px; font-weight: 900; margin-top: 1px; color: var(--text-main); }
+    .kpi-sub { font-size: 9.5px; font-weight: 700; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .text-cyan { color: var(--cyan-dark); }
+    .text-emerald { color: var(--emerald-dark); }
+    .text-amber { color: var(--amber-dark); }
+    .text-red { color: var(--red-dark); }
+    .text-navy { color: var(--navy-start); }
+    .text-muted { color: var(--text-muted); }
+
+    .sec-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .sec-title { font-size: 13px; font-weight: 900; color: var(--navy-start); }
+    .sec-subtitle { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+    /* Form Controls */
+    .input-field {
+      width: 100%;
+      background-color: var(--bg-subtle);
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      outline: none;
+    }
+    .input-field:focus {
+      background-color: #ffffff;
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.18);
+    }
+
+    .input-compact {
+      padding: 5px 3px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .matrix-input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 2px;
+      text-align: center;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      outline: none;
+    }
+    .matrix-input:focus {
+      background: #ffffff;
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+    }
+
+    .field-label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    /* Buttons */
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: transform 0.1s, opacity 0.14s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-xs { padding: 4px 7px; font-size: 10.5px; border-radius: 7px; }
+    .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 8px; }
+    .btn-block { width: 100%; }
+
+    .btn-navy { background: var(--navy-start); color: #ffffff; }
+    .btn-cyan { background: var(--cyan-dark); color: #ffffff; }
+    .btn-emerald { background: var(--emerald-dark); color: #ffffff; }
+    .btn-amber { background: var(--amber-soft); color: var(--amber-dark); border: 1px solid #fcd34d; }
+    .btn-red { background: var(--red-soft); color: var(--red-dark); border: 1px solid #fecaca; }
+    .btn-ghost { background: #f1f5f9; color: var(--text-main); border: 1px solid #cbd5e1; }
+    .btn-light-alpha { background: rgba(255,255,255,0.16); color: #ffffff; border: 1px solid rgba(255,255,255,0.28); }
+
+    /* Sub-Tabs & Selection Pills */
+    .subtab-bar {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .subtab-bar.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .subtab-btn {
+      border: none;
+      background: transparent;
+      color: #475569;
+      border-radius: 7px;
+      padding: 6px 4px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .subtab-btn.active {
+      background: #ffffff;
+      color: var(--navy-start);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .sel-pill {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: var(--text-main);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .sel-pill.active {
+      background: var(--navy-start);
+      color: #ffffff;
+      border-color: var(--cyan);
+    }
+
+    /* Grade & Category Badges */
+    .grade-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+    .grade-F  { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .grade-R  { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+    .grade-P  { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .grade-RR { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .cat-fuel  { background: var(--red-soft); color: var(--red-dark); }
+    .cat-food  { background: var(--amber-soft); color: var(--amber-dark); }
+    .cat-ice   { background: var(--cyan-soft); color: #0369a1; }
+    .cat-maint { background: #ede9fe; color: #5b21b6; }
+    .cat-pers  { background: #dcfce7; color: #166534; }
+    .cat-other { background: #e2e8f0; color: #334155; }
+
+    /* Pagination Bar */
+    .pager-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #f1f5f9;
+      flex-shrink: 0;
+    }
+    .pager-info {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex: 1;
+      min-height: 0;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      text-align: right;
+    }
+    table.data-table th {
+      background-color: var(--bg-subtle);
+      color: var(--text-muted);
+      font-weight: 800;
+      padding: 6px 5px;
+      border-bottom: 1px solid var(--border-card);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    table.data-table td {
+      padding: 6px 5px;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 700;
+    }
+    table.data-table tr.clickable-row { cursor: pointer; }
+    table.data-table tr.active-row { background-color: var(--cyan-soft); }
+
+    /* Production Matrix Table (7 rows fit cleanly without scroll) */
+    table.matrix-table {
+      width: 100%;
+      height: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    table.matrix-table th {
+      background: #f8fafc;
+      padding: 5px 2px;
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    table.matrix-table td {
+      padding: 3px 2px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    table.matrix-table tr.vessel-own-row {
+      background: #f0f9ff;
+    }
+
+    /* 2x3 Sailors Grid */
+    .sailors-grid-2x3 {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 6px;
+      overflow: hidden;
+    }
+    .sailor-card-btn {
+      background: #ffffff;
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 7px 9px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: right;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.14s, transform 0.1s;
+    }
+    .sailor-card-btn:active {
+      transform: scale(0.97);
+      border-color: var(--cyan);
+    }
+
+    /* 4-Row Pricing Grid */
+    .pricing-grid-4 {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    /* Grid Helpers */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .stack-xs > * + * { margin-top: 5px; }
+    .stack-sm > * + * { margin-top: 7px; }
+
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--navy-start);
+    }
+    .toggle-pill input {
+      accent-color: var(--cyan-dark);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    /* List Items Container (Paginated, No Scroll) */
+    .paged-items-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow: hidden;
+    }
+
+    .list-row-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       4. MODALS (NO VERTICAL SCROLL, MAX-HEIGHT 92DVH, NO X / ✕ ICONS)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(2px);
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: #ffffff;
+      width: 100%;
+      max-width: 490px;
+      max-height: 92dvh;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 22px 44px -10px rgba(0, 0, 0, 0.35);
+    }
+
+    .modal-head {
+      padding: 10px 14px;
+      background: linear-gradient(135deg, var(--navy-start), var(--navy-end));
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .modal-head h3 {
+      font-size: 13.5px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .modal-body {
+      padding: 10px 12px;
+      overflow: hidden;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Toast Notifications */
+    .toast-box {
+      position: fixed;
+      top: 54px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 24px);
+      max-width: 440px;
+      z-index: 80;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      pointer-events: none;
+    }
+    .toast-item {
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    .toast-success { background: var(--emerald-dark); }
+    .toast-error   { background: var(--red-dark); }
+    .toast-info    { background: var(--navy-start); }
+
+    /* Dedicated Hidden Print Sheet */
+    #print-only-sheet {
+      display: none;
+    }
+
+    @media print {
+      html, body {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+      }
+      body > * {
+        display: none !important;
+      }
+      #print-only-sheet {
+        display: block !important;
+        width: 100% !important;
+        padding: 14px !important;
+        color: #0f172a !important;
+        background: #ffffff !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-box"></div>
+
+  <!-- Fixed Zero-Scroll App Shell -->
+  <div class="app-shell">
+
+    <!-- ==================== FIXED TOP BAR (~48px) ==================== -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="header-logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+            <path d="M5 20L8 26H24L27 20H5Z" fill="#ef4444"/>
+            <path d="M9 12H23L25 20H7L9 12Z" fill="#ffffff"/>
+            <rect x="13" y="7" width="6" height="5" rx="1" fill="#38bdf8"/>
+            <path d="M3 27C6 25 9 29 12 27C15 25 18 29 21 27C24 25 27 29 29 27" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="header-title">إدارة الأسطول</span>
+        <select id="hdr-ship-select" class="header-ship-select" aria-label="اختيار السفينة النشطة" onchange="selectBoat(this.value)"></select>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="hdr-quick-btn" onclick="openCurrentSettlementPreview()">التصفية</button>
+        <button type="button" id="hdr-sync-btn" class="sync-badge-btn badge-green" onclick="openSyncModal()">
+          <span class="status-dot"></span>
+          <span id="hdr-sync-text">متصل</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== MAIN VIEWPORT (ZERO VERTICAL SCROLL) ==================== -->
+    <main class="app-main">
+      <section id="view-home" class="tab-view active"></section>
+      <section id="view-production" class="tab-view"></section>
+      <section id="view-sailors" class="tab-view"></section>
+      <section id="view-purchases" class="tab-view"></section>
+      <section id="view-manager" class="tab-view"></section>
+      <section id="view-pricing" class="tab-view"></section>
+      <section id="view-boats" class="tab-view"></section>
+    </main>
+
+    <!-- ==================== FIXED BOTTOM NAVIGATION (~60px, 7 TABS) ==================== -->
+    <nav class="bottom-nav" aria-label="التنقل الرئيسي">
+
+      <!-- 1. الرئيسية -->
+      <button type="button" class="nav-tab-btn active" data-tab="home" onclick="switchTab('home')">
+        <span class="nav-icon-wrap">
+          <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="2" width="28" height="28" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+            <rect x="7" y="15" width="4.5" height="10" rx="1.2" fill="#10b981"/>
+            <rect x="13.75" y="10" width="4.5" height="15" rx="1.2" fill="#f59e0b"/>
+            <rect x="20.5" y="7" width="4.5" height="18" rx="1.2" fill="#0ea5e9"/>
+          </svg>
+        </span>
+        <span class="nav-label">الرئيسية</span>
+      </button>
+
+      <!-- 2. الإنتاج -->
+      <button type="button" class="nav-tab-btn" data-tab="production" onclick="switchTab('production')">
+        <span class="nav-icon-wrap">
+          <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
+            <path d="M23 16C26.5 11.5 29.5 10.5 30 11C30.3 13 28.5 15.5 28.5 16C28.5 16.5 30.3 19 30 21C29.5 21.5 26.5 20.5 23 16Z" fill="#0369a1"/>
+            <path d="M13 8C15.5 5.5 18 5.5 19.5 8.5L13 9.5V8Z" fill="#38bdf8"/>
+            <path d="M2 16C4.5 10.5 10.5 8.5 16.5 9.5C21 10.2 24 13.5 24.5 16C24 18.5 21 21.8 16.5 22.5C10.5 23.5 4.5 21.5 2 16Z" fill="#0ea5e9"/>
+            <path d="M4 17.5C8 20.8 14.5 21.5 20.5 18.5C15.5 21.5 9 21.2 4 17.5Z" fill="#7dd3fc"/>
+            <circle cx="7.5" cy="14.5" r="2" fill="#ffffff"/>
+            <circle cx="7.2" cy="14.5" r="1" fill="#0f172a"/>
+          </svg>
+        </span>
+        <span class="nav-label">الإنتاج</span>
+      </button>
+
+      <!-- 3. البحارة -->
+      <button type="button" class="nav-tab-btn" data-tab="sailors" onclick="switchTab('sailors')">
+        <span class="nav-icon-wrap">
+          <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
+            <path d="M6 29C6 23.5 10 20 16 20C22 20 26 23.5 26 29H6Z" fill="#0ea5e9"/>
+            <path d="M11 20V29H21V20C19.5 21 17.8 21.5 16 21.5C14.2 21.5 12.5 21 11 20Z" fill="#1d4ed8"/>
+            <rect x="12.5" y="23.5" width="7" height="4.5" rx="1" fill="#38bdf8"/>
+            <circle cx="16" cy="14" r="5.5" fill="#fcd34d"/>
+            <path d="M9.5 12.5C9.5 8 12.2 5.5 16 5.5C19.8 5.5 22.5 8 22.5 12.5H9.5Z" fill="#f59e0b"/>
+            <rect x="8" y="11.5" width="16" height="2.4" rx="1.2" fill="#fbbf24"/>
+          </svg>
+        </span>
+        <span class="nav-label">البحارة</span>
+      </button>
+
+      <!-- 4. المشتريات -->
+      <button type="button" class="nav-tab-btn" data-tab="purchases" onclick="switchTab('purchases')">
+        <span class="nav-icon-wrap">
+          <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
+            <path d="M7 4H21L25 8V28L22 26L19 28L16 26L13 28L10 26L7 28V4Z" fill="#ffffff" stroke="#94a3b8" stroke-width="1.3"/>
+            <path d="M21 4V8H25L21 4Z" fill="#cbd5e1"/>
+            <rect x="10" y="10" width="9" height="2.2" rx="1" fill="#0ea5e9"/>
+            <rect x="10" y="14.5" width="12" height="2" rx="1" fill="#38bdf8"/>
+            <rect x="10" y="18.5" width="10" height="2" rx="1" fill="#38bdf8"/>
+            <rect x="10" y="22.5" width="7" height="2" rx="1" fill="#0ea5e9"/>
+          </svg>
+        </span>
+        <span class="nav-label">المشتريات</span>
+      </button>
+
+      <!-- 5. المسير -->
+      <button type="button" class="nav-tab-btn" data-tab="manager" onclick="switchTab('manager')">
+        <span class="nav-icon-wrap">
+          <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="7" r="3" stroke="#0f2942" stroke-width="2.2" fill="#e2e8f0"/>
+            <rect x="14.6" y="9.5" width="2.8" height="16" rx="1" fill="#0f2942"/>
+            <rect x="10.5" y="12" width="11" height="2.5" rx="1.2" fill="#0ea5e9"/>
+            <path d="M6.5 18.5C6.5 24 10.5 27.5 16 27.5C21.5 27.5 25.5 24 25.5 18.5" stroke="#0f2942" stroke-width="2.8" stroke-linecap="round"/>
+            <path d="M4.5 19.5L7 16.5L9.5 19.5" fill="#0ea5e9"/>
+            <path d="M22.5 19.5L25 16.5L27.5 19.5" fill="#0ea5e9"/>
+          </svg>
+        </span>
+        <span class="nav-label">المسير</span>
+      </button>
+
+      <!-- 6. الأسعار -->
+      <button type="button" class="nav-tab-btn" data-tab="pricing" onclick="switchTab('pricing')">
+        <span class="nav-icon-wrap">
+          <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
+            <path d="M12 5L14 9H18L20 5H12Z" fill="#b45309"/>
+            <path d="M10 11C7 14 6 19 7.5 23.5C8.8 26.5 12 27.5 16 27.5C20 27.5 23.2 26.5 24.5 23.5C26 19 25 14 22 11H10Z" fill="#f59e0b"/>
+            <rect x="11" y="9" width="10" height="2.5" rx="1.2" fill="#92400e"/>
+            <text x="16" y="22.5" text-anchor="middle" font-size="11.5" font-weight="900" fill="#78350f">$</text>
+          </svg>
+        </span>
+        <span class="nav-label">الأسعار</span>
+      </button>
+
+      <!-- 7. السفن -->
+      <button type="button" class="nav-tab-btn" data-tab="boats" onclick="switchTab('boats')">
+        <span class="nav-icon-wrap">
+          <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
+            <rect x="13" y="5" width="6" height="4" rx="1" fill="#0f2942"/>
+            <rect x="14.5" y="3" width="3" height="2.5" fill="#f59e0b"/>
+            <path d="M8 9H24L25.5 17H6.5L8 9Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+            <rect x="10" y="11" width="3" height="2.5" rx="0.5" fill="#0ea5e9"/>
+            <rect x="14.5" y="11" width="3" height="2.5" rx="0.5" fill="#0ea5e9"/>
+            <rect x="19" y="11" width="3" height="2.5" rx="0.5" fill="#0ea5e9"/>
+            <path d="M4 17H28L25 24.5H7L4 17Z" fill="#ef4444"/>
+            <path d="M3 26C5.5 24.5 8 27.5 10.5 26C13 24.5 15.5 27.5 18 26C20.5 24.5 23 27.5 25.5 26C27 25 28.5 26 29.5 26.5" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">السفن</span>
+      </button>
+
+    </nav>
+  </div>
+
+  <!-- ==================== TABBED & COMPACT MODALS (NO X / ✕ ICONS) ==================== -->
+
+  <!-- 1. Sailor Detail Modal (2 Sub-Tabs: الإنتاج والاسم | الدين والسلفة) -->
+  <div id="modal-sailor" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <h3 id="sm-title">بيانات البحار</h3>
+        <button type="button" class="btn btn-xs btn-ghost" onclick="closeModal('modal-sailor')">إغلاق</button>
+      </div>
+      <div class="modal-body" id="sm-body"></div>
+    </div>
+  </div>
+
+  <!-- 2. Purchase Add / Edit Modal -->
+  <div id="modal-purchase" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <h3 id="pm-title">إضافة شراء</h3>
+        <button type="button" class="btn btn-xs btn-ghost" onclick="closeModal('modal-purchase')">إغلاق</button>
+      </div>
+      <form onsubmit="savePurchaseForm(event)" class="modal-body">
+        <input type="hidden" id="pm-id" />
+        <div class="stack-sm">
+          <div>
+            <label class="field-label">البيان / الوصف *</label>
+            <input type="text" id="pm-item" required class="input-field" placeholder="مثال: مازوت، معاش، ثلج، صيانة..." />
+          </div>
+          <div class="grid-2">
+            <div>
+              <label class="field-label">التصنيف</label>
+              <select id="pm-cat" class="input-field">
+                <option value="محروقات">محروقات</option>
+                <option value="معاش">معاش</option>
+                <option value="ثلج">ثلج</option>
+                <option value="صيانة">صيانة</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">المبلغ (<span class="cur-lbl">أوقية</span>) *</label>
+              <input type="number" min="0" step="any" id="pm-amount" required class="input-field input-compact" placeholder="0" />
+            </div>
+          </div>
+          <div>
+            <label class="field-label">التاريخ</label>
+            <input type="date" id="pm-date" class="input-field" />
+          </div>
+        </div>
+        <div class="grid-2" style="padding-top:4px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-purchase')">إلغاء</button>
+          <button type="submit" class="btn btn-navy">حفظ الشراء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Ship Add / Edit Modal (2 Sub-Tabs: البيانات والطاقم | أسعار البحارة) -->
+  <div id="modal-ship-form" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <h3 id="ship-form-title">بيانات السفينة</h3>
+        <button type="button" class="btn btn-xs btn-ghost" onclick="closeModal('modal-ship-form')">إغلاق</button>
+      </div>
+      <form onsubmit="submitShipForm(event)" class="modal-body">
+        <input type="hidden" id="ship-form-id" />
+        <div class="subtab-bar">
+          <button type="button" class="subtab-btn active" id="ship-st-btn-info" onclick="switchShipModalSubTab('info')">البيانات والطاقم</button>
+          <button type="button" class="subtab-btn" id="ship-st-btn-prices" onclick="switchShipModalSubTab('prices')">أسعار البحارة</button>
+        </div>
+
+        <!-- Sub-Tab 1: Vessel Info & 6 Sailors -->
+        <div id="ship-st-info" class="stack-xs">
+          <div class="grid-2">
+            <div>
+              <label class="field-label">اسم السفينة *</label>
+              <input type="text" id="ship-form-name" required class="input-field" placeholder="مثال: البركة" />
+            </div>
+            <div>
+              <label class="field-label">الربان / المسير *</label>
+              <input type="text" id="ship-form-captain" required class="input-field" placeholder="اسم الربان" />
+            </div>
+          </div>
+          <div>
+            <label class="field-label">أسماء البحارة الستة (6 عمال)</label>
+            <div class="grid-2">
+              <input type="text" class="ship-sailor-name input-field" required placeholder="بحار 1" />
+              <input type="text" class="ship-sailor-name input-field" required placeholder="بحار 2" />
+              <input type="text" class="ship-sailor-name input-field" required placeholder="بحار 3" />
+              <input type="text" class="ship-sailor-name input-field" required placeholder="بحار 4" />
+              <input type="text" class="ship-sailor-name input-field" required placeholder="بحار 5" />
+              <input type="text" class="ship-sailor-name input-field" required placeholder="بحار 6" />
+            </div>
+          </div>
+          <div id="ship-form-delete-wrap" style="display:none;padding-top:2px;">
+            <button type="button" class="btn btn-xs btn-red btn-block" onclick="confirmDeleteEditingShip()">حذف هذه السفينة نهائياً</button>
+          </div>
+        </div>
+
+        <!-- Sub-Tab 2: Individual Vessel Sailor Prices -->
+        <div id="ship-st-prices" class="stack-sm" style="display:none;">
+          <div style="background:#e0f2fe;border:1px solid #bae6fd;border-radius:10px;padding:7px 9px;font-size:11px;font-weight:700;color:#075985;">
+            تحديد أسعار حساب البحارة الخاصة بهذه السفينة فقط لكل كيلوغرام (<span class="cur-lbl">أوقية</span>):
+          </div>
+          <div class="grid-2">
+            <div class="card" style="background:#f8fafc;">
+              <span class="grade-pill grade-F" style="margin-bottom:5px;">F — عينة ممتازة</span>
+              <input type="number" min="0" step="any" id="ship-form-crew-F" required class="input-field input-compact text-amber" />
+            </div>
+            <div class="card" style="background:#f8fafc;">
+              <span class="grade-pill grade-R" style="margin-bottom:5px;">R — عينة أولى</span>
+              <input type="number" min="0" step="any" id="ship-form-crew-R" required class="input-field input-compact text-amber" />
+            </div>
+            <div class="card" style="background:#f8fafc;">
+              <span class="grade-pill grade-P" style="margin-bottom:5px;">P — عينة ثانية</span>
+              <input type="number" min="0" step="any" id="ship-form-crew-P" required class="input-field input-compact text-amber" />
+            </div>
+            <div class="card" style="background:#f8fafc;">
+              <span class="grade-pill grade-RR" style="margin-bottom:5px;">RR — عينة ثالثة</span>
+              <input type="number" min="0" step="any" id="ship-form-crew-RR" required class="input-field input-compact text-amber" />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-ship-form')">إلغاء</button>
+          <button type="submit" class="btn btn-navy">حفظ السفينة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Sync & Offline Modal (2 Sub-Tabs: المزامنة السحابية | النسخ والنقل) -->
+  <div id="modal-sync" class="modal-backdrop">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <h3>المزامنة والعمل بدون إنترنت</h3>
+        <button type="button" class="btn btn-xs btn-ghost" onclick="closeModal('modal-sync')">إغلاق</button>
+      </div>
+      <div class="modal-body" id="sync-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 5. Settlement Preview Modal (3 Sub-Tabs: ملخص السفينة | تصفية البحارة | المشتريات) -->
+  <div id="modal-report" class="modal-backdrop">
+    <div class="modal-sheet" style="max-width:530px;">
+      <div class="modal-head">
+        <h3 id="rep-modal-title">كشف التصفية</h3>
+        <button type="button" class="btn btn-xs btn-ghost" onclick="closeModal('modal-report')">إغلاق</button>
+      </div>
+      <div class="modal-body" id="rep-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 6. History Archive Modal (Paginated 4 per page) -->
+  <div id="modal-history" class="modal-backdrop">
+    <div class="modal-sheet" style="max-width:500px;">
+      <div class="modal-head">
+        <h3>سجل الأيام المحفوظة</h3>
+        <button type="button" class="btn btn-xs btn-ghost" onclick="closeModal('modal-history')">إغلاق</button>
+      </div>
+      <div class="modal-body" id="history-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 7. Confirmation Modal (Replaces alert/confirm) -->
+  <div id="modal-confirm" class="modal-backdrop">
+    <div class="modal-sheet" style="max-width:390px;">
+      <div class="modal-head">
+        <h3 id="confirm-title">تأكيد الإجراء</h3>
+        <button type="button" class="btn btn-xs btn-ghost" onclick="closeModal('modal-confirm')">إغلاق</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-msg" style="font-size:12.5px;font-weight:700;color:#334155;"></p>
+        <div id="confirm-checks-wrap" class="stack-xs" style="display:none;background:#f8fafc;padding:8px;border-radius:10px;border:1px solid #e2e8f0;">
+          <label class="toggle-pill" id="confirm-check1-row">
+            <input type="checkbox" id="confirm-check1" checked />
+            <span id="confirm-check1-label"></span>
+          </label>
+          <label class="toggle-pill" id="confirm-check2-row">
+            <input type="checkbox" id="confirm-check2" checked />
+            <span id="confirm-check2-label"></span>
+          </label>
+        </div>
+        <div class="grid-2">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-confirm')">إلغاء</button>
+          <button type="button" id="confirm-ok-btn" class="btn btn-navy">تأكيد</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Print-Only Complete Settlement Sheet -->
+  <div id="print-only-sheet" dir="rtl"></div>
+
+  <!-- ==================== APPLICATION SCRIPT ==================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ========================================================================
+         1. CONSTANTS, DEFAULTS & STATE RECOVERY
+         ======================================================================== */
+      const STORAGE_KEY = 'fishing_fleet_app_v4';
+      const FALLBACK_KEYS = ['fishing_fleet_app_v3', 'fishing_fleet_app_v2', 'fishing_fleet_app_v1'];
+      const GRADES = ['F', 'R', 'P', 'RR'];
+      const PURCHASE_CATEGORIES = ['محروقات', 'معاش', 'ثلج', 'صيانة', 'أخرى'];
+      const MGR_EXPENSE_CATEGORIES = ['محروقات', 'معاش', 'ثلج', 'صيانة', 'شخصي', 'أخرى'];
+
+      const GRADE_INFO = {
+        F:  { label: 'F',  desc: 'ممتازة', cls: 'grade-F' },
+        R:  { label: 'R',  desc: 'أولى',   cls: 'grade-R' },
+        P:  { label: 'P',  desc: 'ثانية',  cls: 'grade-P' },
+        RR: { label: 'RR', desc: 'ثالثة',  cls: 'grade-RR' }
+      };
+
+      function getTodayISO() {
+        const d = new Date();
+        const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        return local.toISOString().split('T')[0];
+      }
+
+      function getTimeStampLabel() {
+        const d = new Date();
+        const t = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        return getTodayISO() + ' ' + t;
+      }
+
+      function createDefaultPricing() {
+        return {
+          F:  { sellPrice: 3200, crewPrice: 1800 },
+          R:  { sellPrice: 2600, crewPrice: 1400 },
+          P:  { sellPrice: 1900, crewPrice: 1000 },
+          RR: { sellPrice: 1200, crewPrice: 600 }
+        };
+      }
+
+      function createEmptyProduction() {
+        return { F: 0, R: 0, P: 0, RR: 0 };
+      }
+
+      function createDefaultState() {
+        const today = getTodayISO();
+        return {
+          version: 4,
+          currency: 'أوقية',
+          activeTab: 'home',
+          activeBoatId: 'ship-ahmad-hamad',
+          boats: [
+            {
+              id: 'ship-ahmad-hamad',
+              name: 'احمد حمد',
+              captain: 'سيدي ولد محمد',
+              todayDate: today,
+              pricing: createDefaultPricing(),
+              boatProduction: { F: 24.5, R: 30, P: 18, RR: 11 },
+              sailors: [
+                { id: 1, name: 'محمد ولد سالم',    production: { F: 14, R: 16, P: 9,  RR: 5 }, debt: 12000, autoDeduct: true, manualDeduction: 0 },
+                { id: 2, name: 'ابراهيم ولد بابه', production: { F: 11, R: 15, P: 10, RR: 6 }, debt: 0,     autoDeduct: true, manualDeduction: 0 },
+                { id: 3, name: 'موسى ولد علي',     production: { F: 10, R: 14, P: 12, RR: 4 }, debt: 8000,  autoDeduct: true, manualDeduction: 0 },
+                { id: 4, name: 'يحيى ولد المختار', production: { F: 15, R: 12, P: 8,  RR: 5 }, debt: 18000, autoDeduct: true, manualDeduction: 0 },
+                { id: 5, name: 'عمر ولد بلال',     production: { F: 9,  R: 13, P: 11, RR: 7 }, debt: 5000,  autoDeduct: true, manualDeduction: 0 },
+                { id: 6, name: 'خالد ولد الشيخ',   production: { F: 12, R: 11, P: 7,  RR: 3 }, debt: 7000,  autoDeduct: true, manualDeduction: 0 }
+              ],
+              purchases: [
+                { id: 'pur-101', date: today, item: 'مازوت وزيت المحرك', category: 'محروقات', amount: 48000 },
+                { id: 'pur-102', date: today, item: 'معاش الطاقم اليومي', category: 'معاش',    amount: 16500 },
+                { id: 'pur-103', date: today, item: 'قوالب ثلج للحفظ',   category: 'ثلج',     amount: 9500 }
+              ],
+              managerProduction: [
+                { id: 'mp-101', date: today, grade: 'F', kg: 10, unitPrice: 3200, note: 'حصة إشراف المسير' }
+              ],
+              managerExpenses: [
+                { id: 'me-101', date: today, item: 'اتصالات وتنقل الميناء', category: 'شخصي', amount: 4500 }
+              ]
+            },
+            {
+              id: 'ship-omar',
+              name: 'عمر',
+              captain: 'عبد الله ولد الحسن',
+              todayDate: today,
+              pricing: {
+                F:  { sellPrice: 3200, crewPrice: 1750 },
+                R:  { sellPrice: 2600, crewPrice: 1350 },
+                P:  { sellPrice: 1900, crewPrice: 950 },
+                RR: { sellPrice: 1200, crewPrice: 550 }
+              },
+              boatProduction: { F: 18, R: 22, P: 15, RR: 8 },
+              sailors: [
+                { id: 1, name: 'الأمين ولد الداه',   production: { F: 10, R: 12, P: 8,  RR: 4 }, debt: 6000,  autoDeduct: true, manualDeduction: 0 },
+                { id: 2, name: 'يسلم ولد أحمد',     production: { F: 12, R: 14, P: 7,  RR: 5 }, debt: 0,     autoDeduct: true, manualDeduction: 0 },
+                { id: 3, name: 'عالي ولد بوبكر',    production: { F: 8,  R: 11, P: 10, RR: 6 }, debt: 15000, autoDeduct: true, manualDeduction: 0 },
+                { id: 4, name: 'الحسن ولد النني',   production: { F: 13, R: 10, P: 9,  RR: 3 }, debt: 4000,  autoDeduct: true, manualDeduction: 0 },
+                { id: 5, name: 'سالم ولد امبارك',   production: { F: 7,  R: 13, P: 11, RR: 5 }, debt: 0,     autoDeduct: true, manualDeduction: 0 },
+                { id: 6, name: 'الشيخ ولد المصطفى', production: { F: 9,  R: 10, P: 8,  RR: 4 }, debt: 9000,  autoDeduct: true, manualDeduction: 0 }
+              ],
+              purchases: [
+                { id: 'pur-201', date: today, item: 'بنزين القارب',       category: 'محروقات', amount: 38000 },
+                { id: 'pur-202', date: today, item: 'تموين ومعاش الرحلة', category: 'معاش',    amount: 14000 }
+              ],
+              managerProduction: [],
+              managerExpenses: []
+            },
+            {
+              id: 'ship-ahmad-salek',
+              name: 'احمد سالك',
+              captain: 'محفوظ ولد الداه',
+              todayDate: today,
+              pricing: {
+                F:  { sellPrice: 3200, crewPrice: 1850 },
+                R:  { sellPrice: 2600, crewPrice: 1450 },
+                P:  { sellPrice: 1900, crewPrice: 1050 },
+                RR: { sellPrice: 1200, crewPrice: 650 }
+              },
+              boatProduction: { F: 16, R: 20, P: 12, RR: 6 },
+              sailors: [
+                { id: 1, name: 'بكار ولد سيدي',   production: { F: 9,  R: 11, P: 7, RR: 3 }, debt: 0,     autoDeduct: true, manualDeduction: 0 },
+                { id: 2, name: 'الزين ولد عمر',   production: { F: 11, R: 10, P: 6, RR: 4 }, debt: 5000,  autoDeduct: true, manualDeduction: 0 },
+                { id: 3, name: 'التاه ولد يحيى',  production: { F: 8,  R: 12, P: 9, RR: 5 }, debt: 11000, autoDeduct: true, manualDeduction: 0 },
+                { id: 4, name: 'الشيخ ولد بلال',  production: { F: 10, R: 13, P: 8, RR: 4 }, debt: 0,     autoDeduct: true, manualDeduction: 0 },
+                { id: 5, name: 'بلال ولد مسعود',  production: { F: 12, R: 9,  P: 7, RR: 6 }, debt: 3500,  autoDeduct: true, manualDeduction: 0 },
+                { id: 6, name: 'عابدين ولد خليل', production: { F: 9,  R: 11, P: 6, RR: 3 }, debt: 0,     autoDeduct: true, manualDeduction: 0 }
+              ],
+              purchases: [
+                { id: 'pur-301', date: today, item: 'مازوت وزيت',       category: 'محروقات', amount: 35000 },
+                { id: 'pur-302', date: today, item: 'صيانة شباك وخيوط', category: 'صيانة',   amount: 12000 }
+              ],
+              managerProduction: [],
+              managerExpenses: []
+            }
+          ],
+          history: [],
+          sync: {
+            syncUrl: '',
+            autoSync: true,
+            pendingChangesCount: 0,
+            lastSyncedAt: 'حفظ محلي تلقائي',
+            logs: [
+              { time: getTimeStampLabel(), msg: 'تهيئة قاعدة البيانات المحلية بنجاح' }
+            ]
+          }
+        };
+      }
+
+      /* ========================================================================
+         2. STATE, PAGINATION & UI SESSION VARIABLES
+         ======================================================================== */
+      let state = loadState();
+
+      // Pagination cursors (Zero-Scroll enforcement)
+      let homeFleetPage = 1;
+      let purchasesPage = 1;
+      let boatsPage = 1;
+      let mgrProdPage = 1;
+      let mgrExpPage = 1;
+      let historyPage = 1;
+      let reportPurPage = 1;
+
+      // View Filters & Sub-tabs
+      let purchaseSearch = '';
+      let purchaseCatFilter = 'ALL';
+      let mgrSubTab = 'prod'; // 'prod' | 'exp'
+      let mgrDateScope = 'selected'; // 'selected' | 'all'
+      let mgrSelectedGrade = 'F';
+      let mgrPriceMode = 'sell'; // 'sell' | 'crew' | 'custom'
+      let mgrExpenseCat = 'محروقات';
+
+      // Modal Sub-tabs & Targets
+      let activeSailorIdx = 0;
+      let sailorModalSubTab = 'prod'; // 'prod' | 'debt'
+      let syncModalSubTab = 'cloud';  // 'cloud' | 'backup'
+      let reportSubTab = 'summary';   // 'summary' | 'sailors' | 'purchases'
+      let activeReportRecord = null;
+      let currentReportText = '';
+
+      let isSyncing = false;
+      let autoSyncTimer = null;
+
+      function normalizeBoat(rawBoat) {
+        const defPricing = createDefaultPricing();
+        const pricing = {};
+        GRADES.forEach(g => {
+          const src = rawBoat && rawBoat.pricing && rawBoat.pricing[g] ? rawBoat.pricing[g] : defPricing[g];
+          pricing[g] = {
+            sellPrice: Math.max(0, Number(src.sellPrice) || 0),
+            crewPrice: Math.max(0, Number(src.crewPrice) || 0)
+          };
+        });
+
+        const boatProd = {};
+        GRADES.forEach(g => {
+          boatProd[g] = Math.max(0, Number(rawBoat && rawBoat.boatProduction && rawBoat.boatProduction[g]) || 0);
+        });
+
+        const rawSailors = Array.isArray(rawBoat && rawBoat.sailors) ? rawBoat.sailors : [];
+        const sailors = [];
+        for (let i = 0; i < 6; i++) {
+          const rs = rawSailors[i] || {};
+          const sProd = {};
+          GRADES.forEach(g => {
+            sProd[g] = Math.max(0, Number(rs.production && rs.production[g]) || 0);
+          });
+          sailors.push({
+            id: i + 1,
+            name: String(rs.name || ('بحار ' + (i + 1))),
+            production: sProd,
+            debt: Math.max(0, Number(rs.debt) || 0),
+            autoDeduct: rs.autoDeduct !== false,
+            manualDeduction: Math.max(0, Number(rs.manualDeduction) || 0)
+          });
+        }
+
+        const purchases = Array.isArray(rawBoat && rawBoat.purchases)
+          ? rawBoat.purchases.map(p => ({
+              id: String(p.id || ('pur-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6))),
+              date: String(p.date || getTodayISO()),
+              item: String(p.item || 'مصروف'),
+              category: PURCHASE_CATEGORIES.includes(p.category) ? p.category : 'أخرى',
+              amount: Math.max(0, Number(p.amount) || 0)
+            }))
+          : [];
+
+        const managerProduction = Array.isArray(rawBoat && rawBoat.managerProduction)
+          ? rawBoat.managerProduction.map(mp => ({
+              id: String(mp.id || ('mp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6))),
+              date: String(mp.date || getTodayISO()),
+              grade: GRADES.includes(mp.grade) ? mp.grade : 'F',
+              kg: Math.max(0, Number(mp.kg) || 0),
+              unitPrice: Math.max(0, Number(mp.unitPrice) || 0),
+              note: String(mp.note || '')
+            }))
+          : [];
+
+        const managerExpenses = Array.isArray(rawBoat && rawBoat.managerExpenses)
+          ? rawBoat.managerExpenses.map(me => {
+              const cat = me.category === 'مصروف شخصي' ? 'شخصي' : me.category;
+              return {
+                id: String(me.id || ('me-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6))),
+                date: String(me.date || getTodayISO()),
+                item: String(me.item || 'مصروف مسير'),
+                category: MGR_EXPENSE_CATEGORIES.includes(cat) ? cat : 'أخرى',
+                amount: Math.max(0, Number(me.amount) || 0)
+              };
+            })
+          : [];
+
+        return {
+          id: String((rawBoat && rawBoat.id) || ('ship-' + Date.now())),
+          name: String((rawBoat && rawBoat.name) || 'سفينة'),
+          captain: String((rawBoat && rawBoat.captain) || 'الربان'),
+          todayDate: String((rawBoat && rawBoat.todayDate) || getTodayISO()),
+          pricing: pricing,
+          boatProduction: boatProd,
+          sailors: sailors,
+          purchases: purchases,
+          managerProduction: managerProduction,
+          managerExpenses: managerExpenses
+        };
+      }
+
+      function normalizeState(raw) {
+        const def = createDefaultState();
+        if (!raw || typeof raw !== 'object' || !Array.isArray(raw.boats) || raw.boats.length === 0) {
+          return def;
+        }
+        const boats = raw.boats.map(normalizeBoat);
+        const validTabs = ['home', 'production', 'sailors', 'purchases', 'manager', 'pricing', 'boats'];
+        const activeTab = validTabs.includes(raw.activeTab) ? raw.activeTab : 'home';
+        const activeBoatId = boats.some(b => b.id === raw.activeBoatId) ? raw.activeBoatId : boats[0].id;
+
+        const sync = Object.assign({}, def.sync, raw.sync || {});
+        if (!Array.isArray(sync.logs)) sync.logs = def.sync.logs;
+        sync.autoSync = sync.autoSync !== false;
+
+        return {
+          version: 4,
+          currency: String(raw.currency || 'أوقية'),
+          activeTab: activeTab,
+          activeBoatId: activeBoatId,
+          boats: boats,
+          history: Array.isArray(raw.history) ? raw.history : [],
+          sync: sync
+        };
+      }
+
+      function loadState() {
+        try {
+          let raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            for (let i = 0; i < FALLBACK_KEYS.length; i++) {
+              const candidate = localStorage.getItem(FALLBACK_KEYS[i]);
+              if (candidate) {
+                raw = candidate;
+                break;
+              }
+            }
+          }
+          if (!raw) {
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k && k.indexOf('fishing_fleet') === 0) {
+                const candidate = localStorage.getItem(k);
+                if (candidate) {
+                  raw = candidate;
+                  break;
+                }
+              }
+            }
+          }
+          if (!raw) return createDefaultState();
+          return normalizeState(JSON.parse(raw));
+        } catch (e) {
+          return createDefaultState();
+        }
+      }
+
+      function saveToLocalStorage() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          showToast('تعذر الحفظ في ذاكرة المتصفح', 'error');
+        }
+      }
+
+      function pushSyncLog(msg) {
+        if (!state.sync) state.sync = { syncUrl: '', autoSync: true, pendingChangesCount: 0, lastSyncedAt: '', logs: [] };
+        state.sync.logs.unshift({ time: getTimeStampLabel(), msg: msg });
+        if (state.sync.logs.length > 20) state.sync.logs.length = 20;
+      }
+
+      function persistState(isDataChange, logMessage) {
+        if (isDataChange) {
+          state.sync.pendingChangesCount = (state.sync.pendingChangesCount || 0) + 1;
+          if (logMessage) pushSyncLog(logMessage);
+        }
+        saveToLocalStorage();
+        updateHeaderSyncBadge();
+        if (isDataChange) scheduleAutoSync();
+      }
+
+      /* ========================================================================
+         3. FORMATTERS & HELPERS (WESTERN NUMERALS 0-9)
+         ======================================================================== */
+      const intFmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+      const decFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+      function fmtMoney(val) {
+        const n = Number(val);
+        return intFmt.format(Number.isFinite(n) ? Math.round(n) : 0);
+      }
+
+      function fmtNum(val) {
+        const n = Number(val);
+        return decFmt.format(Number.isFinite(n) ? n : 0);
+      }
+
+      function numVal(v) {
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      function escHTML(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getActiveBoat() {
+        let boat = state.boats.find(b => b.id === state.activeBoatId);
+        if (!boat) {
+          boat = state.boats[0];
+          state.activeBoatId = boat.id;
+        }
+        return boat;
+      }
+
+      function getCategoryClass(cat) {
+        if (cat === 'محروقات') return 'cat-fuel';
+        if (cat === 'معاش') return 'cat-food';
+        if (cat === 'ثلج') return 'cat-ice';
+        if (cat === 'صيانة') return 'cat-maint';
+        if (cat === 'شخصي' || cat === 'مصروف شخصي') return 'cat-pers';
+        return 'cat-other';
+      }
+
+      function paginateArray(arr, page, perPage) {
+        const total = arr.length;
+        const totalPages = Math.max(1, Math.ceil(total / perPage));
+        const safePage = Math.min(Math.max(1, page), totalPages);
+        const start = (safePage - 1) * perPage;
+        return {
+          items: arr.slice(start, start + perPage),
+          page: safePage,
+          totalPages: totalPages,
+          total: total
+        };
+      }
+
+      function renderPagerHTML(page, totalPages, totalItems, prevCall, nextCall) {
+        if (totalPages <= 1 && totalItems <= 0) return '';
+        return `
+          <div class="pager-bar">
+            <button type="button" class="btn btn-xs btn-ghost" ${page <= 1 ? 'disabled' : ''} onclick="${prevCall}">السابق</button>
+            <span class="pager-info">صفحة <span dir="ltr">${page} / ${totalPages}</span> (<span dir="ltr">${totalItems}</span>)</span>
+            <button type="button" class="btn btn-xs btn-ghost" ${page >= totalPages ? 'disabled' : ''} onclick="${nextCall}">التالي</button>
+          </div>
+        `;
+      }
+
+      /* ========================================================================
+         4. FINANCIAL CALCULATIONS
+         ======================================================================== */
+      function calcSailorMetrics(sailor, pricing) {
+        let kg = 0;
+        let salesVal = 0;
+        let grossShare = 0;
+
+        GRADES.forEach(g => {
+          const qty = Math.max(0, numVal(sailor.production[g]));
+          const sellP = Math.max(0, numVal(pricing[g].sellPrice));
+          const crewP = Math.max(0, numVal(pricing[g].crewPrice));
+          kg += qty;
+          salesVal += qty * sellP;
+          grossShare += qty * crewP;
+        });
+
+        const debt = Math.max(0, numVal(sailor.debt));
+        let deduction = 0;
+        if (sailor.autoDeduct) {
+          deduction = Math.min(debt, grossShare);
+        } else {
+          const manual = Math.max(0, numVal(sailor.manualDeduction));
+          deduction = Math.min(debt, Math.min(grossShare, manual));
+        }
+
+        const netPayable = Math.max(0, grossShare - deduction);
+        const remainingDebt = Math.max(0, debt - deduction);
+
+        return {
+          name: sailor.name,
+          kg: kg,
+          salesVal: salesVal,
+          grossShare: grossShare,
+          debt: debt,
+          deduction: deduction,
+          netPayable: netPayable,
+          remainingDebt: remainingDebt
+        };
+      }
+
+      function calcBoatMetrics(boat) {
+        let vesselProdKg = 0;
+        let vesselSalesVal = 0;
+        const vesselByGrade = {};
+
+        GRADES.forEach(g => {
+          const qty = Math.max(0, numVal(boat.boatProduction[g]));
+          const sellP = Math.max(0, numVal(boat.pricing[g].sellPrice));
+          const val = qty * sellP;
+          vesselProdKg += qty;
+          vesselSalesVal += val;
+          vesselByGrade[g] = { kg: qty, val: val };
+        });
+
+        let sailorsProdKg = 0;
+        let sailorsSalesVal = 0;
+        let totalSailorsShare = 0;
+        let totalDebt = 0;
+        let totalDebtDeducted = 0;
+        let totalNetPaidToSailors = 0;
+
+        const sailorMetrics = boat.sailors.map(s => {
+          const sm = calcSailorMetrics(s, boat.pricing);
+          sailorsProdKg += sm.kg;
+          sailorsSalesVal += sm.salesVal;
+          totalSailorsShare += sm.grossShare;
+          totalDebt += sm.debt;
+          totalDebtDeducted += sm.deduction;
+          totalNetPaidToSailors += sm.netPayable;
+          return sm;
+        });
+
+        let totalPurchases = 0;
+        let fuelTotal = 0;
+        let otherExpensesTotal = 0;
+        const purchasesByCat = {};
+        PURCHASE_CATEGORIES.forEach(c => { purchasesByCat[c] = 0; });
+
+        boat.purchases.forEach(p => {
+          const amt = Math.max(0, numVal(p.amount));
+          totalPurchases += amt;
+          const cat = PURCHASE_CATEGORIES.includes(p.category) ? p.category : 'أخرى';
+          purchasesByCat[cat] += amt;
+          if (cat === 'محروقات') fuelTotal += amt;
+          else otherExpensesTotal += amt;
+        });
+
+        const totalProductionKg = vesselProdKg + sailorsProdKg;
+        const totalSalesValue = vesselSalesVal + sailorsSalesVal;
+        const netVesselProfit = totalSalesValue - totalSailorsShare - totalPurchases;
+
+        return {
+          vesselProdKg: vesselProdKg,
+          vesselSalesVal: vesselSalesVal,
+          vesselByGrade: vesselByGrade,
+          sailorsProdKg: sailorsProdKg,
+          sailorsSalesVal: sailorsSalesVal,
+          totalSailorsShare: totalSailorsShare,
+          totalDebt: totalDebt,
+          totalDebtDeducted: totalDebtDeducted,
+          totalNetPaidToSailors: totalNetPaidToSailors,
+          totalPurchases: totalPurchases,
+          fuelTotal: fuelTotal,
+          otherExpensesTotal: otherExpensesTotal,
+          purchasesByCat: purchasesByCat,
+          totalProductionKg: totalProductionKg,
+          totalSalesValue: totalSalesValue,
+          netVesselProfit: netVesselProfit,
+          sailorMetrics: sailorMetrics
+        };
+      }
+
+      function calcFleetMetrics() {
+        let totalKg = 0;
+        let totalSales = 0;
+        let totalSailorsShare = 0;
+        let totalDebt = 0;
+        let totalPurchases = 0;
+        let netFleetProfit = 0;
+
+        const perBoat = state.boats.map(b => {
+          const m = calcBoatMetrics(b);
+          totalKg += m.totalProductionKg;
+          totalSales += m.totalSalesValue;
+          totalSailorsShare += m.totalSailorsShare;
+          totalDebt += m.totalDebt;
+          totalPurchases += m.totalPurchases;
+          netFleetProfit += m.netVesselProfit;
+          return { boat: b, metrics: m };
+        });
+
+        return {
+          totalKg: totalKg,
+          totalSales: totalSales,
+          totalSailorsShare: totalSailorsShare,
+          totalDebt: totalDebt,
+          totalPurchases: totalPurchases,
+          netFleetProfit: netFleetProfit,
+          perBoat: perBoat
+        };
+      }
+
+      /* ========================================================================
+         5. TOASTS & MODALS
+         ======================================================================== */
+      function showToast(msg, type) {
+        const box = document.getElementById('toast-container');
+        if (!box) return;
+        const el = document.createElement('div');
+        el.className = 'toast-item ' + (type === 'error' ? 'toast-error' : (type === 'info' ? 'toast-info' : 'toast-success'));
+        el.textContent = msg;
+        box.appendChild(el);
+        setTimeout(() => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(-6px)';
+          setTimeout(() => el.remove(), 250);
+        }, 2300);
+      }
+
+      function openModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('open');
+      }
+
+      function closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('open');
+      }
+
+      document.querySelectorAll('.modal-backdrop').forEach(bd => {
+        bd.addEventListener('click', function (e) {
+          if (e.target === bd) bd.classList.remove('open');
+        });
+      });
+
+      let confirmCallback = null;
+      function openConfirmModal(opts) {
+        document.getElementById('confirm-title').textContent = opts.title || 'تأكيد';
+        document.getElementById('confirm-msg').textContent = opts.message || '';
+        const okBtn = document.getElementById('confirm-ok-btn');
+        okBtn.className = 'btn ' + (opts.btnClass || 'btn-navy');
+        okBtn.textContent = opts.okLabel || 'تأكيد';
+
+        const checksWrap = document.getElementById('confirm-checks-wrap');
+        const row1 = document.getElementById('confirm-check1-row');
+        const row2 = document.getElementById('confirm-check2-row');
+        const chk1 = document.getElementById('confirm-check1');
+        const chk2 = document.getElementById('confirm-check2');
+
+        if (opts.check1Label || opts.check2Label) {
+          checksWrap.style.display = 'block';
+          if (opts.check1Label) {
+            row1.style.display = 'inline-flex';
+            document.getElementById('confirm-check1-label').textContent = opts.check1Label;
+            chk1.checked = opts.check1Default !== false;
+          } else {
+            row1.style.display = 'none';
+          }
+          if (opts.check2Label) {
+            row2.style.display = 'inline-flex';
+            document.getElementById('confirm-check2-label').textContent = opts.check2Label;
+            chk2.checked = opts.check2Default !== false;
+          } else {
+            row2.style.display = 'none';
+          }
+        } else {
+          checksWrap.style.display = 'none';
+        }
+
+        confirmCallback = opts.onConfirm || null;
+        openModal('modal-confirm');
+      }
+
+      document.getElementById('confirm-ok-btn').addEventListener('click', function () {
+        const cb = confirmCallback;
+        const checks = {
+          check1: document.getElementById('confirm-check1').checked,
+          check2: document.getElementById('confirm-check2').checked
+        };
+        closeModal('modal-confirm');
+        confirmCallback = null;
+        if (typeof cb === 'function') cb(checks);
+      });
+
+      function updateCurrencyLabels() {
+        document.querySelectorAll('.cur-lbl').forEach(el => {
+          el.textContent = state.currency;
+        });
+      }
+
+      /* ========================================================================
+         6. HEADER & NAVIGATION
+         ======================================================================== */
+      function renderHeaderShipSelect() {
+        const sel = document.getElementById('hdr-ship-select');
+        if (!sel) return;
+        sel.innerHTML = state.boats.map(b =>
+          '<option value="' + escHTML(b.id) + '" ' + (b.id === state.activeBoatId ? 'selected' : '') + '>' + escHTML(b.name) + '</option>'
+        ).join('');
+      }
+
+      function selectBoat(boatId) {
+        if (!state.boats.some(b => b.id === boatId)) return;
+        state.activeBoatId = boatId;
+        purchasesPage = 1;
+        mgrProdPage = 1;
+        mgrExpPage = 1;
+        saveToLocalStorage();
+        renderHeaderShipSelect();
+        renderActiveTab();
+      }
+
+      function switchTab(tabId) {
+        const valid = ['home', 'production', 'sailors', 'purchases', 'manager', 'pricing', 'boats'];
+        state.activeTab = valid.includes(tabId) ? tabId : 'home';
+        saveToLocalStorage();
+
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === state.activeTab);
+        });
+        document.querySelectorAll('.tab-view').forEach(sec => {
+          sec.classList.toggle('active', sec.id === 'view-' + state.activeTab);
+        });
+
+        renderActiveTab();
+      }
+
+      function renderActiveTab() {
+        const tab = state.activeTab || 'home';
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+        document.querySelectorAll('.tab-view').forEach(sec => {
+          sec.classList.toggle('active', sec.id === 'view-' + tab);
+        });
+
+        const viewEl = document.getElementById('view-' + tab);
+        if (!viewEl) return;
+
+        if (tab === 'home') viewEl.innerHTML = renderHomeTab();
+        else if (tab === 'production') viewEl.innerHTML = renderProductionTab();
+        else if (tab === 'sailors') viewEl.innerHTML = renderSailorsTab();
+        else if (tab === 'purchases') viewEl.innerHTML = renderPurchasesTab();
+        else if (tab === 'manager') viewEl.innerHTML = renderManagerTab();
+        else if (tab === 'pricing') viewEl.innerHTML = renderPricingTab();
+        else if (tab === 'boats') viewEl.innerHTML = renderBoatsTab();
+      }
+
+      /* ========================================================================
+         7. TAB 1: DASHBOARD (الرئيسية — ZERO SCROLL)
+         ======================================================================== */
+      function renderHomeTab() {
+        const fleet = calcFleetMetrics();
+        const activeBoat = getActiveBoat();
+        const activeMetrics = calcBoatMetrics(activeBoat);
+
+        const paged = paginateArray(fleet.perBoat, homeFleetPage, 3);
+        homeFleetPage = paged.page;
+
+        const rowsHTML = paged.items.map(({ boat, metrics }) => {
+          const isActive = boat.id === activeBoat.id;
+          return `
+            <tr class="clickable-row ${isActive ? 'active-row' : ''}" onclick="selectBoat('${escHTML(boat.id)}')">
+              <td>
+                <div style="font-weight:900;color:#0f2942;">${escHTML(boat.name)}</div>
+                <div style="font-size:9.5px;color:#64748b;">${escHTML(boat.captain)}</div>
+              </td>
+              <td dir="ltr">${fmtNum(metrics.totalProductionKg)}</td>
+              <td dir="ltr" class="text-cyan">${fmtMoney(metrics.totalSalesValue)}</td>
+              <td dir="ltr" class="text-amber">${fmtMoney(metrics.totalSailorsShare)}</td>
+              <td dir="ltr" class="text-red">${fmtMoney(metrics.totalPurchases)}</td>
+              <td dir="ltr" class="${metrics.netVesselProfit >= 0 ? 'text-emerald' : 'text-red'}" style="font-weight:900;">${fmtMoney(metrics.netVesselProfit)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        return `
+          <!-- Compact Navy Hero Card -->
+          <div class="hero-card">
+            <div class="flex-between">
+              <div>
+                <div class="hero-label">صافي الأسطول الكلي (${state.boats.length} سفن)</div>
+                <div class="hero-value">
+                  <span dir="ltr">${fmtMoney(fleet.netFleetProfit)}</span>
+                  <span class="hero-currency">${escHTML(state.currency)}</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+                <button type="button" class="btn btn-xs btn-cyan" onclick="openCurrentSettlementPreview()">كشف التصفية</button>
+                <button type="button" class="btn btn-xs btn-light-alpha" onclick="promptSaveDayToHistory()">حفظ اليومية</button>
+              </div>
+            </div>
+            <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.14);font-size:10.5px;color:#bae6fd;" class="flex-between">
+              <span>السفينة النشطة: <strong style="color:#ffffff;">${escHTML(activeBoat.name)}</strong></span>
+              <span>صافي السفينة: <strong style="color:#34d399;" dir="ltr">${fmtMoney(activeMetrics.netVesselProfit)}</strong> ${escHTML(state.currency)}</span>
+            </div>
+          </div>
+
+          <!-- Compact 2x2 KPI Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-box">
+              <div class="kpi-title">إجمالي الإنتاج (كغ)</div>
+              <div class="kpi-num text-cyan" dir="ltr">${fmtNum(fleet.totalKg)}</div>
+              <div class="kpi-sub">كيلوغرام</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-title">قيمة البيع</div>
+              <div class="kpi-num text-navy" dir="ltr">${fmtMoney(fleet.totalSales)}</div>
+              <div class="kpi-sub">${escHTML(state.currency)}</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-title">حصة البحارة</div>
+              <div class="kpi-num text-amber" dir="ltr">${fmtMoney(fleet.totalSailorsShare)}</div>
+              <div class="kpi-sub">${escHTML(state.currency)}</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-title">ديون البحارة والمشتريات</div>
+              <div class="kpi-num text-red" dir="ltr">${fmtMoney(fleet.totalDebt + fleet.totalPurchases)}</div>
+              <div class="kpi-sub">ديون <span dir="ltr">${fmtMoney(fleet.totalDebt)}</span> • مشتريات <span dir="ltr">${fmtMoney(fleet.totalPurchases)}</span></div>
+            </div>
+          </div>
+
+          <!-- Paginated Vessel Performance Table -->
+          <div class="card flex-fill-card">
+            <div class="sec-head" style="margin-bottom:4px;">
+              <div>
+                <div class="sec-title">أداء كل سفينة</div>
+                <div class="sec-subtitle">اضغط على أي صف لتفعيل السفينة</div>
+              </div>
+              <span class="cat-badge cat-ice" dir="ltr">${escHTML(activeBoat.todayDate)}</span>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>السفينة</th>
+                    <th>كغ</th>
+                    <th>البيع</th>
+                    <th>الحصص</th>
+                    <th>المشتريات</th>
+                    <th>الصافي</th>
+                  </tr>
+                </thead>
+                <tbody>${rowsHTML}</tbody>
+              </table>
+            </div>
+            ${paged.totalPages > 1 ? renderPagerHTML(paged.page, paged.totalPages, paged.total, 'changeHomeFleetPage(-1)', 'changeHomeFleetPage(1)') : ''}
+          </div>
+        `;
+      }
+
+      function changeHomeFleetPage(delta) {
+        homeFleetPage += delta;
+        renderActiveTab();
+      }
+
+      /* ========================================================================
+         8. TAB 2: PRODUCTION MATRIX (الإنتاج — 1+6 ROWS WITHOUT SCROLL)
+         ======================================================================== */
+      function renderProductionTab() {
+        const boat = getActiveBoat();
+        const m = calcBoatMetrics(boat);
+
+        const vesselRowHTML = `
+          <tr class="vessel-own-row">
+            <td style="padding-right:4px;">
+              <div style="font-size:11px;font-weight:900;color:#0f2942;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">إنتاج السفينة</div>
+              <div style="font-size:9px;color:#0284c7;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHTML(boat.name)}</div>
+            </td>
+            ${GRADES.map(g => `
+              <td>
+                <input type="number" min="0" step="any" class="matrix-input"
+                  value="${boat.boatProduction[g] || ''}" placeholder="0"
+                  oninput="onMatrixVesselInput('${g}', this.value)" />
+              </td>
+            `).join('')}
+            <td style="text-align:center;font-weight:900;color:#0284c7;font-size:11px;" id="mx-vessel-kg" dir="ltr">${fmtNum(m.vesselProdKg)}</td>
+          </tr>
+        `;
+
+        const sailorRowsHTML = boat.sailors.map((s, idx) => {
+          const sm = m.sailorMetrics[idx];
+          return `
+            <tr>
+              <td style="padding-right:4px;">
+                <div style="font-size:11px;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${idx + 1}. ${escHTML(s.name)}</div>
+              </td>
+              ${GRADES.map(g => `
+                <td>
+                  <input type="number" min="0" step="any" class="matrix-input"
+                    value="${s.production[g] || ''}" placeholder="0"
+                    oninput="onMatrixSailorInput(${idx}, '${g}', this.value)" />
+                </td>
+              `).join('')}
+              <td style="text-align:center;font-weight:900;color:#0f2942;font-size:11px;" id="mx-sailor-kg-${idx}" dir="ltr">${fmtNum(sm.kg)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        return `
+          <!-- Top Summary Bar -->
+          <div class="hero-card" style="padding:8px 10px;">
+            <div class="grid-3" style="text-align:center;align-items:center;">
+              <div>
+                <div class="hero-label">إنتاج السفينة الخاصة</div>
+                <div style="font-size:14px;font-weight:900;color:#38bdf8;"><span id="prod-top-vessel-kg" dir="ltr">${fmtNum(m.vesselProdKg)}</span> كغ</div>
+              </div>
+              <div style="border-inline:1px solid rgba(255,255,255,0.18);">
+                <div class="hero-label">إنتاج البحارة (6)</div>
+                <div style="font-size:14px;font-weight:900;color:#fbbf24;"><span id="prod-top-sailors-kg" dir="ltr">${fmtNum(m.sailorsProdKg)}</span> كغ</div>
+              </div>
+              <div>
+                <div class="hero-label">إجمالي قيمة البيع</div>
+                <div style="font-size:14px;font-weight:900;color:#34d399;" id="prod-top-sales" dir="ltr">${fmtMoney(m.totalSalesValue)}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compact 7-Row Matrix (Vessel + 6 Sailors) -->
+          <div class="card flex-fill-card" style="padding:6px 6px;">
+            <div class="flex-between" style="padding:0 4px 4px;">
+              <span class="sec-title" style="font-size:12px;">مصفوفة الإنتاج (كغ) — ${escHTML(boat.name)}</span>
+              <span style="font-size:10px;font-weight:800;color:#64748b;">الإجمالي: <strong class="text-navy" id="prod-top-total-kg" dir="ltr">${fmtNum(m.totalProductionKg)}</strong> كغ</span>
+            </div>
+            <div style="flex:1;min-height:0;overflow:hidden;">
+              <table class="matrix-table">
+                <colgroup>
+                  <col style="width:27%;">
+                  <col style="width:15%;">
+                  <col style="width:15%;">
+                  <col style="width:15%;">
+                  <col style="width:15%;">
+                  <col style="width:13%;">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th style="text-align:right;padding-right:4px;">الاسم</th>
+                    <th><span class="grade-pill grade-F">F</span></th>
+                    <th><span class="grade-pill grade-R">R</span></th>
+                    <th><span class="grade-pill grade-P">P</span></th>
+                    <th><span class="grade-pill grade-RR">RR</span></th>
+                    <th>كغ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${vesselRowHTML}
+                  ${sailorRowsHTML}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      function refreshProductionTopTotals(m) {
+        const elV = document.getElementById('prod-top-vessel-kg');
+        const elS = document.getElementById('prod-top-sailors-kg');
+        const elVal = document.getElementById('prod-top-sales');
+        const elTot = document.getElementById('prod-top-total-kg');
+        if (elV) elV.textContent = fmtNum(m.vesselProdKg);
+        if (elS) elS.textContent = fmtNum(m.sailorsProdKg);
+        if (elVal) elVal.textContent = fmtMoney(m.totalSalesValue);
+        if (elTot) elTot.textContent = fmtNum(m.totalProductionKg);
+      }
+
+      function onMatrixVesselInput(grade, rawVal) {
+        const boat = getActiveBoat();
+        boat.boatProduction[grade] = Math.max(0, numVal(rawVal));
+        persistState(true, 'تحديث إنتاج سفينة ' + boat.name + ' (' + grade + ')');
+        const m = calcBoatMetrics(boat);
+        const cell = document.getElementById('mx-vessel-kg');
+        if (cell) cell.textContent = fmtNum(m.vesselProdKg);
+        refreshProductionTopTotals(m);
+      }
+
+      function onMatrixSailorInput(idx, grade, rawVal) {
+        const boat = getActiveBoat();
+        if (!boat.sailors[idx]) return;
+        boat.sailors[idx].production[grade] = Math.max(0, numVal(rawVal));
+        persistState(true, 'تحديث إنتاج ' + boat.sailors[idx].name);
+        const m = calcBoatMetrics(boat);
+        const cell = document.getElementById('mx-sailor-kg-' + idx);
+        if (cell && m.sailorMetrics[idx]) cell.textContent = fmtNum(m.sailorMetrics[idx].kg);
+        refreshProductionTopTotals(m);
+      }
+
+      /* ========================================================================
+         9. TAB 3: SAILORS (البحارة — 2x3 GRID + TABBED MODAL)
+         ======================================================================== */
+      function renderSailorsTab() {
+        const boat = getActiveBoat();
+        const m = calcBoatMetrics(boat);
+
+        const cardsHTML = boat.sailors.map((s, idx) => {
+          const sm = m.sailorMetrics[idx];
+          return `
+            <button type="button" class="sailor-card-btn" onclick="openSailorModal(${idx})">
+              <div class="flex-between" style="width:100%;">
+                <div style="display:flex;align-items:center;gap:5px;min-width:0;">
+                  <span style="width:20px;height:20px;border-radius:6px;background:#0f2942;color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:10.5px;flex-shrink:0;">${idx + 1}</span>
+                  <span style="font-size:11.5px;font-weight:900;color:#0f2942;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHTML(s.name)}</span>
+                </div>
+                <span class="cat-badge cat-ice" dir="ltr">${fmtNum(sm.kg)} كغ</span>
+              </div>
+
+              <div style="width:100%;font-size:10.5px;display:flex;flex-direction:column;gap:2px;">
+                <div class="flex-between">
+                  <span class="text-muted">الحصة:</span>
+                  <strong class="text-amber" dir="ltr">${fmtMoney(sm.grossShare)}</strong>
+                </div>
+                <div class="flex-between">
+                  <span class="text-muted">الدين:</span>
+                  <strong class="text-red" dir="ltr">${fmtMoney(sm.debt)}</strong>
+                </div>
+              </div>
+
+              <div class="flex-between" style="width:100%;background:#d1fae5;border-radius:7px;padding:3px 7px;">
+                <span style="font-size:10px;font-weight:800;color:#065f46;">الصافي:</span>
+                <strong style="font-size:11.5px;font-weight:900;color:#065f46;" dir="ltr">${fmtMoney(sm.netPayable)}</strong>
+              </div>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <!-- Top Compact Summary Strip -->
+          <div class="grid-3" style="text-align:center;flex-shrink:0;">
+            <div class="kpi-box" style="padding:6px 5px;">
+              <div class="kpi-title">مجموع الحصص</div>
+              <div class="kpi-num text-amber" style="font-size:13px;" dir="ltr">${fmtMoney(m.totalSailorsShare)}</div>
+            </div>
+            <div class="kpi-box" style="padding:6px 5px;">
+              <div class="kpi-title">مجموع الديون</div>
+              <div class="kpi-num text-red" style="font-size:13px;" dir="ltr">${fmtMoney(m.totalDebt)}</div>
+            </div>
+            <div class="kpi-box" style="padding:6px 5px;">
+              <div class="kpi-title">الصافي للدفع</div>
+              <div class="kpi-num text-emerald" style="font-size:13px;" dir="ltr">${fmtMoney(m.totalNetPaidToSailors)}</div>
+            </div>
+          </div>
+
+          <!-- 2x3 Sailors Grid Filling Remaining Space -->
+          <div class="sailors-grid-2x3">
+            ${cardsHTML}
+          </div>
+        `;
+      }
+
+      function openSailorModal(idx) {
+        activeSailorIdx = idx;
+        sailorModalSubTab = 'prod';
+        renderSailorModalBody();
+        openModal('modal-sailor');
+      }
+
+      function switchSailorModalSubTab(sub) {
+        sailorModalSubTab = sub;
+        renderSailorModalBody();
+      }
+
+      function renderSailorModalBody() {
+        const boat = getActiveBoat();
+        const s = boat.sailors[activeSailorIdx];
+        if (!s) return;
+        const sm = calcSailorMetrics(s, boat.pricing);
+
+        document.getElementById('sm-title').textContent = (activeSailorIdx + 1) + '. ' + s.name + ' (' + boat.name + ')';
+
+        const subTabBar = `
+          <div class="subtab-bar">
+            <button type="button" class="subtab-btn ${sailorModalSubTab === 'prod' ? 'active' : ''}" onclick="switchSailorModalSubTab('prod')">الإنتاج والاسم</button>
+            <button type="button" class="subtab-btn ${sailorModalSubTab === 'debt' ? 'active' : ''}" onclick="switchSailorModalSubTab('debt')">الدين والسلفة</button>
+          </div>
+        `;
+
+        let innerHTML = '';
+        if (sailorModalSubTab === 'prod') {
+          innerHTML = `
+            <div class="stack-sm">
+              <div>
+                <label class="field-label">اسم البحار</label>
+                <input type="text" class="input-field" value="${escHTML(s.name)}" oninput="onSailorModalNameInput(this.value)" />
+              </div>
+
+              <div>
+                <label class="field-label">كمية الإنتاج حسب العينة (كغ) — يُحسب بسعر بحارة ${escHTML(boat.name)}</label>
+                <div class="grid-2">
+                  ${GRADES.map(g => `
+                    <div class="card" style="background:#f8fafc;padding:7px 8px;">
+                      <div class="flex-between" style="margin-bottom:4px;">
+                        <span class="grade-pill ${GRADE_INFO[g].cls}">${g}</span>
+                        <span style="font-size:10px;color:#b45309;font-weight:800;" dir="ltr">${fmtMoney(boat.pricing[g].crewPrice)}/كغ</span>
+                      </div>
+                      <input type="number" min="0" step="any" class="input-field input-compact"
+                        value="${s.production[g] || ''}" placeholder="0"
+                        oninput="onSailorModalProdInput('${g}', this.value)" />
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div class="flex-between" style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:8px 10px;">
+                <span style="font-size:11px;font-weight:800;color:#92400e;">المجموع: <strong id="sm-tot-kg" dir="ltr">${fmtNum(sm.kg)}</strong> كغ</span>
+                <span style="font-size:12px;font-weight:900;color:#b45309;">الحصة: <strong id="sm-tot-share" dir="ltr">${fmtMoney(sm.grossShare)}</strong> ${escHTML(state.currency)}</span>
+              </div>
+            </div>
+          `;
+        } else {
+          innerHTML = `
+            <div class="stack-sm">
+              <div class="grid-2">
+                <div class="kpi-box" style="background:#fee2e2;border-color:#fecaca;">
+                  <div class="kpi-title" style="color:#991b1b;">الدين الحالي</div>
+                  <div class="kpi-num text-red" id="sm-debt-disp" dir="ltr">${fmtMoney(sm.debt)}</div>
+                </div>
+                <div class="kpi-box" style="background:#d1fae5;border-color:#a7f3d0;">
+                  <div class="kpi-title" style="color:#065f46;">الصافي للدفع</div>
+                  <div class="kpi-num text-emerald" id="sm-net-disp" dir="ltr">${fmtMoney(sm.netPayable)}</div>
+                </div>
+              </div>
+
+              <!-- Quick Advance / Repayment -->
+              <div class="card" style="background:#f8fafc;padding:8px;">
+                <label class="field-label">إضافة سلفة أو تسجيل سداد فوري (${escHTML(state.currency)})</label>
+                <div class="grid-3" style="margin-bottom:6px;">
+                  <input type="number" min="0" step="any" id="sm-adv-amount" class="input-field input-compact" placeholder="المبلغ" />
+                  <button type="button" class="btn btn-xs btn-cyan" onclick="applySailorModalDebtDelta(1)">+ إضافة سلفة</button>
+                  <button type="button" class="btn btn-xs btn-emerald" onclick="applySailorModalDebtDelta(-1)">- خصم سداد</button>
+                </div>
+                <div class="pill-row">
+                  <button type="button" class="sel-pill" onclick="setSailorAdvPreset(1000)">1,000</button>
+                  <button type="button" class="sel-pill" onclick="setSailorAdvPreset(2000)">2,000</button>
+                  <button type="button" class="sel-pill" onclick="setSailorAdvPreset(5000)">5,000</button>
+                  <button type="button" class="sel-pill" onclick="setSailorAdvPreset(10000)">10,000</button>
+                </div>
+              </div>
+
+              <!-- Direct Debt & Deduction Mode -->
+              <div class="card" style="background:#f8fafc;padding:8px;" class="stack-xs">
+                <div class="grid-2" style="align-items:center;margin-bottom:6px;">
+                  <div>
+                    <label class="field-label">تعديل الدين مباشرة</label>
+                    <input type="number" min="0" step="any" class="input-field input-compact text-red"
+                      value="${s.debt || ''}" placeholder="0"
+                      oninput="onSailorModalDirectDebt(this.value)" />
+                  </div>
+                  <div>
+                    <label class="field-label">المخصوم من الحصة</label>
+                    ${s.autoDeduct
+                      ? '<div class="input-field input-compact text-red" style="background:#fff;" id="sm-deduct-disp" dir="ltr">' + fmtMoney(sm.deduction) + '</div>'
+                      : '<input type="number" min="0" step="any" class="input-field input-compact text-red" value="' + (s.manualDeduction || '') + '" placeholder="0" oninput="onSailorModalManualDeduct(this.value)" />'
+                    }
+                  </div>
+                </div>
+                <div class="flex-between">
+                  <label class="toggle-pill">
+                    <input type="checkbox" ${s.autoDeduct ? 'checked' : ''} onchange="onSailorModalAutoToggle(this.checked)" />
+                    <span>خصم تلقائي من الحصة</span>
+                  </label>
+                  <span style="font-size:10.5px;font-weight:800;color:#64748b;">متبقي الدين: <strong id="sm-remdebt-disp" dir="ltr">${fmtMoney(sm.remainingDebt)}</strong></span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById('sm-body').innerHTML = `
+          ${subTabBar}
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;">
+            ${innerHTML}
+          </div>
+          <button type="button" class="btn btn-navy btn-block" onclick="closeModal('modal-sailor')">تم وحفظ</button>
+        `;
+      }
+
+      function onSailorModalNameInput(val) {
+        const boat = getActiveBoat();
+        const s = boat.sailors[activeSailorIdx];
+        if (!s) return;
+        s.name = val || ('بحار ' + (activeSailorIdx + 1));
+        document.getElementById('sm-title').textContent = (activeSailorIdx + 1) + '. ' + s.name + ' (' + boat.name + ')';
+        persistState(true, 'تغيير اسم البحار إلى ' + s.name);
+        renderActiveTab();
+      }
+
+      function onSailorModalProdInput(grade, rawVal) {
+        const boat = getActiveBoat();
+        const s = boat.sailors[activeSailorIdx];
+        if (!s) return;
+        s.production[grade] = Math.max(0, numVal(rawVal));
+        persistState(true, 'تحديث إنتاج ' + s.name);
+        const sm = calcSailorMetrics(s, boat.pricing);
+        const elKg = document.getElementById('sm-tot-kg');
+        const elShare = document.getElementById('sm-tot-share');
+        if (elKg) elKg.textContent = fmtNum(sm.kg);
+        if (elShare) elShare.textContent = fmtMoney(sm.grossShare);
+        renderActiveTab();
+      }
+
+      function setSailorAdvPreset(amt) {
+        const inp = document.getElementById('sm-adv-amount');
+        if (inp) inp.value = amt;
+      }
+
+      function applySailorModalDebtDelta(sign) {
+        const boat = getActiveBoat();
+        const s = boat.sailors[activeSailorIdx];
+        if (!s) return;
+        const inp = document.getElementById('sm-adv-amount');
+        const amt = Math.max(0, numVal(inp ? inp.value : 0));
+        if (amt <= 0) {
+          showToast('الرجاء إدخال مبلغ أكبر من الصفر', 'error');
+          return;
+        }
+        s.debt = Math.max(0, numVal(s.debt) + sign * amt);
+        persistState(true, (sign > 0 ? 'سلفة ' : 'سداد ') + fmtMoney(amt) + ' لـ ' + s.name);
+        renderSailorModalBody();
+        renderActiveTab();
+        showToast(sign > 0 ? 'تمت إضافة السلفة بنجاح' : 'تم خصم السداد بنجاح', 'success');
+      }
+
+      function onSailorModalDirectDebt(rawVal) {
+        const boat = getActiveBoat();
+        const s = boat.sailors[activeSailorIdx];
+        if (!s) return;
+        s.debt = Math.max(0, numVal(rawVal));
+        persistState(true, 'تعديل دين ' + s.name);
+        const sm = calcSailorMetrics(s, boat.pricing);
+        const elD = document.getElementById('sm-debt-disp');
+        const elN = document.getElementById('sm-net-disp');
+        const elDed = document.getElementById('sm-deduct-disp');
+        const elRem = document.getElementById('sm-remdebt-disp');
+        if (elD) elD.textContent = fmtMoney(sm.debt);
+        if (elN) elN.textContent = fmtMoney(sm.netPayable);
+        if (elDed) elDed.textContent = fmtMoney(sm.deduction);
+        if (elRem) elRem.textContent = fmtMoney(sm.remainingDebt);
+        renderActiveTab();
+      }
+
+      function onSailorModalAutoToggle(checked) {
+        const boat = getActiveBoat();
+        const s = boat.sailors[activeSailorIdx];
+        if (!s) return;
+        s.autoDeduct = Boolean(checked);
+        persistState(true, 'تغيير نمط خصم الدين لـ ' + s.name);
+        renderSailorModalBody();
+        renderActiveTab();
+      }
+
+      function onSailorModalManualDeduct(rawVal) {
+        const boat = getActiveBoat();
+        const s = boat.sailors[activeSailorIdx];
+        if (!s) return;
+        s.manualDeduction = Math.max(0, numVal(rawVal));
+        persistState(true, 'تعديل الخصم اليدوي لـ ' + s.name);
+        const sm = calcSailorMetrics(s, boat.pricing);
+        const elN = document.getElementById('sm-net-disp');
+        const elRem = document.getElementById('sm-remdebt-disp');
+        if (elN) elN.textContent = fmtMoney(sm.netPayable);
+        if (elRem) elRem.textContent = fmtMoney(sm.remainingDebt);
+        renderActiveTab();
+      }
+
+      /* ========================================================================
+         10. TAB 4: PURCHASES (المشتريات — PAGINATED 4 ITEMS/PAGE)
+         ======================================================================== */
+      function getFilteredPurchases(boat) {
+        const q = purchaseSearch.trim().toLowerCase();
+        return boat.purchases.filter(p => {
+          const matchCat = purchaseCatFilter === 'ALL' || p.category === purchaseCatFilter;
+          const matchQ = !q || p.item.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+          return matchCat && matchQ;
+        });
+      }
+
+      function renderPurchasesTab() {
+        const boat = getActiveBoat();
+        const m = calcBoatMetrics(boat);
+        const filtered = getFilteredPurchases(boat);
+        const paged = paginateArray(filtered, purchasesPage, 4);
+        purchasesPage = paged.page;
+
+        const catPills = ['ALL'].concat(PURCHASE_CATEGORIES).map(c => `
+          <button type="button" class="sel-pill ${purchaseCatFilter === c ? 'active' : ''}" onclick="onPurchaseFilter('${c}')">
+            ${c === 'ALL' ? 'الكل' : c}
+          </button>
+        `).join('');
+
+        return `
+          <!-- Top Summary & Add Button -->
+          <div class="hero-card" style="padding:9px 11px;">
+            <div class="flex-between">
+              <div>
+                <div class="hero-label">مشتريات ومحروقات — ${escHTML(boat.name)}</div>
+                <div style="font-size:18px;font-weight:900;margin-top:1px;" dir="ltr">${fmtMoney(m.totalPurchases)} <span class="hero-currency">${escHTML(state.currency)}</span></div>
+              </div>
+              <button type="button" class="btn btn-sm btn-cyan" onclick="openPurchaseModal(null)">+ إضافة شراء</button>
+            </div>
+            <div class="grid-2" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.14);font-size:10.5px;color:#bae6fd;">
+              <div>المحروقات: <strong style="color:#fca5a5;" dir="ltr">${fmtMoney(m.fuelTotal)}</strong></div>
+              <div>المعاش والمصروفات: <strong style="color:#fde68a;" dir="ltr">${fmtMoney(m.otherExpensesTotal)}</strong></div>
+            </div>
+          </div>
+
+          <!-- Filter & Search Strip -->
+          <div class="card stack-xs" style="flex-shrink:0;padding:7px 9px;">
+            <div class="pill-row">${catPills}</div>
+            <input type="text" class="input-field" value="${escHTML(purchaseSearch)}" placeholder="بحث في لائحة المشتريات..." oninput="onPurchaseSearch(this.value)" />
+          </div>
+
+          <!-- Paginated Purchases List -->
+          <div class="card flex-fill-card">
+            <div class="paged-items-wrap" id="purchases-paged-list">
+              ${renderPurchasesItemsHTML(paged.items)}
+            </div>
+            <div id="purchases-pager-wrap">
+              ${renderPagerHTML(paged.page, paged.totalPages, paged.total, 'changePurchasesPage(-1)', 'changePurchasesPage(1)')}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderPurchasesItemsHTML(items) {
+        if (items.length === 0) {
+          return '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#64748b;font-weight:700;font-size:12px;">لا توجد مشتريات في هذا النطاق.</div>';
+        }
+        return items.map(p => `
+          <div class="list-row-card">
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <strong style="font-size:12px;color:#0f2942;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${escHTML(p.item)}</strong>
+                <span class="cat-badge ${getCategoryClass(p.category)}">${escHTML(p.category)}</span>
+              </div>
+              <div style="font-size:10px;color:#64748b;" dir="ltr">${escHTML(p.date)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+              <strong class="text-red" style="font-size:12px;" dir="ltr">${fmtMoney(p.amount)}</strong>
+              <button type="button" class="btn btn-xs btn-ghost" onclick="openPurchaseModal('${escHTML(p.id)}')">تعديل</button>
+              <button type="button" class="btn btn-xs btn-red" onclick="deletePurchase('${escHTML(p.id)}')">حذف</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function onPurchaseSearch(val) {
+        purchaseSearch = val;
+        purchasesPage = 1;
+        const boat = getActiveBoat();
+        const filtered = getFilteredPurchases(boat);
+        const paged = paginateArray(filtered, purchasesPage, 4);
+        const listEl = document.getElementById('purchases-paged-list');
+        const pagerEl = document.getElementById('purchases-pager-wrap');
+        if (listEl) listEl.innerHTML = renderPurchasesItemsHTML(paged.items);
+        if (pagerEl) pagerEl.innerHTML = renderPagerHTML(paged.page, paged.totalPages, paged.total, 'changePurchasesPage(-1)', 'changePurchasesPage(1)');
+      }
+
+      function onPurchaseFilter(cat) {
+        purchaseCatFilter = cat;
+        purchasesPage = 1;
+        renderActiveTab();
+      }
+
+      function changePurchasesPage(delta) {
+        purchasesPage += delta;
+        renderActiveTab();
+      }
+
+      function openPurchaseModal(purId) {
+        const boat = getActiveBoat();
+        updateCurrencyLabels();
+        if (purId) {
+          const p = boat.purchases.find(x => x.id === purId);
+          if (!p) return;
+          document.getElementById('pm-title').textContent = 'تعديل بند شراء';
+          document.getElementById('pm-id').value = p.id;
+          document.getElementById('pm-item').value = p.item;
+          document.getElementById('pm-cat').value = p.category;
+          document.getElementById('pm-amount').value = p.amount;
+          document.getElementById('pm-date').value = p.date;
+        } else {
+          document.getElementById('pm-title').textContent = 'إضافة شراء جديد — ' + boat.name;
+          document.getElementById('pm-id').value = '';
+          document.getElementById('pm-item').value = '';
+          document.getElementById('pm-cat').value = 'محروقات';
+          document.getElementById('pm-amount').value = '';
+          document.getElementById('pm-date').value = boat.todayDate || getTodayISO();
+        }
+        openModal('modal-purchase');
+      }
+
+      function savePurchaseForm(e) {
+        e.preventDefault();
+        const boat = getActiveBoat();
+        const id = document.getElementById('pm-id').value.trim();
+        const item = document.getElementById('pm-item').value.trim();
+        const category = document.getElementById('pm-cat').value;
+        const amount = Math.max(0, numVal(document.getElementById('pm-amount').value));
+        const date = document.getElementById('pm-date').value || boat.todayDate || getTodayISO();
+
+        if (!item || amount <= 0) {
+          showToast('الرجاء إدخال البيان ومبلغ أكبر من الصفر', 'error');
+          return;
+        }
+
+        if (id) {
+          const p = boat.purchases.find(x => x.id === id);
+          if (p) {
+            p.item = item;
+            p.category = category;
+            p.amount = amount;
+            p.date = date;
+            persistState(true, 'تعديل شراء (' + boat.name + '): ' + item);
+            showToast('تم تحديث البند بنجاح', 'success');
+          }
+        } else {
+          boat.purchases.unshift({
+            id: 'pur-' + Date.now(),
+            date: date,
+            item: item,
+            category: category,
+            amount: amount
+          });
+          purchasesPage = 1;
+          persistState(true, 'إضافة شراء (' + boat.name + '): ' + item);
+          showToast('تمت إضافة الشراء إلى اللائحة', 'success');
+        }
+
+        closeModal('modal-purchase');
+        renderActiveTab();
+      }
+
+      function deletePurchase(purId) {
+        const boat = getActiveBoat();
+        boat.purchases = boat.purchases.filter(p => p.id !== purId);
+        persistState(true, 'حذف بند من مشتريات ' + boat.name);
+        renderActiveTab();
+        showToast('تم حذف البند', 'info');
+      }
+
+      /* ========================================================================
+         11. TAB 5: MANAGER (المسير — PRODUCTION & EXPENSE ONLY, ZERO SCROLL)
+         ======================================================================== */
+      function getMgrDefaultUnitPrice(boat, grade, mode) {
+        const p = boat.pricing[grade] || { sellPrice: 0, crewPrice: 0 };
+        return mode === 'crew' ? p.crewPrice : p.sellPrice;
+      }
+
+      function renderManagerTab() {
+        const boat = getActiveBoat();
+        const selectedDate = boat.todayDate || getTodayISO();
+        const allProd = boat.managerProduction || [];
+        const allExp = boat.managerExpenses || [];
+
+        const scopedProd = mgrDateScope === 'selected' ? allProd.filter(x => x.date === selectedDate) : allProd;
+        const scopedExp = mgrDateScope === 'selected' ? allExp.filter(x => x.date === selectedDate) : allExp;
+
+        let prodKg = 0;
+        let prodVal = 0;
+        scopedProd.forEach(mp => {
+          const kg = Math.max(0, numVal(mp.kg));
+          const pr = Math.max(0, numVal(mp.unitPrice));
+          prodKg += kg;
+          prodVal += kg * pr;
+        });
+
+        let expTotal = 0;
+        scopedExp.forEach(me => {
+          expTotal += Math.max(0, numVal(me.amount));
+        });
+        const netMgr = prodVal - expTotal;
+
+        let subBodyHTML = '';
+        if (mgrSubTab === 'prod') {
+          const pagedProd = paginateArray(scopedProd, mgrProdPage, 3);
+          mgrProdPage = pagedProd.page;
+          const defaultPrice = getMgrDefaultUnitPrice(boat, mgrSelectedGrade, mgrPriceMode);
+
+          const prodRowsHTML = pagedProd.items.length === 0
+            ? '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:11.5px;font-weight:700;">لا يوجد إنتاج مسجل للمسير.</div>'
+            : pagedProd.items.map(mp => {
+                const val = Math.max(0, numVal(mp.kg)) * Math.max(0, numVal(mp.unitPrice));
+                return `
+                  <div class="list-row-card">
+                    <div style="min-width:0;">
+                      <div style="display:flex;align-items:center;gap:5px;">
+                        <span class="grade-pill ${GRADE_INFO[mp.grade].cls}">${escHTML(mp.grade)}</span>
+                        <strong style="font-size:12px;color:#0f2942;" dir="ltr">${fmtNum(mp.kg)} كغ</strong>
+                        <span style="font-size:10.5px;color:#64748b;" dir="ltr">× ${fmtMoney(mp.unitPrice)}</span>
+                      </div>
+                      <div style="font-size:9.5px;color:#64748b;" dir="ltr">${escHTML(mp.date)}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+                      <strong class="text-emerald" style="font-size:12px;" dir="ltr">${fmtMoney(val)}</strong>
+                      <button type="button" class="btn btn-xs btn-red" onclick="deleteMgrProduction('${escHTML(mp.id)}')">حذف</button>
+                    </div>
+                  </div>
+                `;
+              }).join('');
+
+          subBodyHTML = `
+            <form onsubmit="addMgrProduction(event)" class="card stack-xs" style="flex-shrink:0;padding:8px 9px;">
+              <div class="flex-between" style="gap:4px;">
+                <div class="pill-row" style="flex:1;">
+                  ${GRADES.map(g => `<button type="button" class="sel-pill ${mgrSelectedGrade === g ? 'active' : ''}" onclick="onMgrSelectGrade('${g}')">${g}</button>`).join('')}
+                </div>
+                <div class="pill-row">
+                  <button type="button" class="sel-pill ${mgrPriceMode === 'sell' ? 'active' : ''}" onclick="onMgrPriceModeChange('sell')">البيع</button>
+                  <button type="button" class="sel-pill ${mgrPriceMode === 'crew' ? 'active' : ''}" onclick="onMgrPriceModeChange('crew')">البحارة</button>
+                  <button type="button" class="sel-pill ${mgrPriceMode === 'custom' ? 'active' : ''}" onclick="onMgrPriceModeChange('custom')">مخصص</button>
+                </div>
+              </div>
+              <div class="grid-3" style="align-items:end;">
+                <div>
+                  <label class="field-label">الكمية (كغ)</label>
+                  <input type="number" min="0" step="any" id="mgr-prod-kg" required class="input-field input-compact" placeholder="0" />
+                </div>
+                <div>
+                  <label class="field-label">السعر / كغ</label>
+                  <input type="number" min="0" step="any" id="mgr-prod-price" required class="input-field input-compact" value="${defaultPrice}" />
+                </div>
+                <button type="submit" class="btn btn-emerald" style="height:31px;">+ إضافة</button>
+              </div>
+            </form>
+
+            <div class="card flex-fill-card">
+              <div class="paged-items-wrap">${prodRowsHTML}</div>
+              ${renderPagerHTML(pagedProd.page, pagedProd.totalPages, pagedProd.total, 'changeMgrProdPage(-1)', 'changeMgrProdPage(1)')}
+            </div>
+          `;
+        } else {
+          const pagedExp = paginateArray(scopedExp, mgrExpPage, 3);
+          mgrExpPage = pagedExp.page;
+
+          const expRowsHTML = pagedExp.items.length === 0
+            ? '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:11.5px;font-weight:700;">لا توجد مصاريف مسجلة للمسير.</div>'
+            : pagedExp.items.map(me => `
+                <div class="list-row-card">
+                  <div style="min-width:0;">
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <strong style="font-size:12px;color:#0f2942;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px;">${escHTML(me.item)}</strong>
+                      <span class="cat-badge ${getCategoryClass(me.category)}">${escHTML(me.category)}</span>
+                    </div>
+                    <div style="font-size:9.5px;color:#64748b;" dir="ltr">${escHTML(me.date)}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+                    <strong class="text-red" style="font-size:12px;" dir="ltr">${fmtMoney(me.amount)}</strong>
+                    <button type="button" class="btn btn-xs btn-red" onclick="deleteMgrExpense('${escHTML(me.id)}')">حذف</button>
+                  </div>
+                </div>
+              `).join('');
+
+          subBodyHTML = `
+            <form onsubmit="addMgrExpense(event)" class="card stack-xs" style="flex-shrink:0;padding:8px 9px;">
+              <div class="pill-row">
+                ${MGR_EXPENSE_CATEGORIES.map(c => `<button type="button" class="sel-pill ${mgrExpenseCat === c ? 'active' : ''}" onclick="onMgrSelectExpCat('${c}')">${c}</button>`).join('')}
+              </div>
+              <div class="grid-3" style="align-items:end;">
+                <div>
+                  <label class="field-label">البيان</label>
+                  <input type="text" id="mgr-exp-item" required class="input-field" placeholder="وصف المصروف" />
+                </div>
+                <div>
+                  <label class="field-label">المبلغ</label>
+                  <input type="number" min="0" step="any" id="mgr-exp-amount" required class="input-field input-compact" placeholder="0" />
+                </div>
+                <button type="submit" class="btn btn-navy" style="height:31px;">+ إضافة</button>
+              </div>
+            </form>
+
+            <div class="card flex-fill-card">
+              <div class="paged-items-wrap">${expRowsHTML}</div>
+              ${renderPagerHTML(pagedExp.page, pagedExp.totalPages, pagedExp.total, 'changeMgrExpPage(-1)', 'changeMgrExpPage(1)')}
+            </div>
+          `;
+        }
+
+        return `
+          <!-- Top Selection & Summary Strip -->
+          <div class="hero-card" style="padding:8px 10px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+              <select class="input-field" style="flex:1;background:rgba(255,255,255,0.14);color:#fff;border-color:rgba(56,189,248,0.45);padding:4px 6px;font-size:11px;" onchange="selectBoat(this.value)">
+                ${state.boats.map(b => '<option value="' + escHTML(b.id) + '" style="color:#0f172a;" ' + (b.id === boat.id ? 'selected' : '') + '>' + escHTML(b.name) + ' (' + escHTML(b.captain) + ')</option>').join('')}
+              </select>
+              <input type="date" class="input-field" style="width:118px;background:rgba(255,255,255,0.14);color:#fff;border-color:rgba(56,189,248,0.45);padding:4px 5px;font-size:10.5px;" value="${escHTML(selectedDate)}" onchange="onTodayDateChange(this.value)" />
+              <button type="button" class="btn btn-xs ${mgrDateScope === 'all' ? 'btn-cyan' : 'btn-light-alpha'}" onclick="toggleMgrDateScope()">
+                ${mgrDateScope === 'all' ? 'كل التواريخ' : 'اليوم فقط'}
+              </button>
+            </div>
+            <div class="grid-3" style="background:rgba(255,255,255,0.1);border-radius:9px;padding:5px 4px;text-align:center;">
+              <div>
+                <div style="font-size:9.5px;color:#bae6fd;font-weight:700;">إنتاج المسير (<span dir="ltr">${fmtNum(prodKg)}</span> كغ)</div>
+                <div style="font-size:13px;font-weight:900;color:#34d399;" dir="ltr">${fmtMoney(prodVal)}</div>
+              </div>
+              <div style="border-inline:1px solid rgba(255,255,255,0.18);">
+                <div style="font-size:9.5px;color:#bae6fd;font-weight:700;">مصروف المسير</div>
+                <div style="font-size:13px;font-weight:900;color:#fca5a5;" dir="ltr">${fmtMoney(expTotal)}</div>
+              </div>
+              <div>
+                <div style="font-size:9.5px;color:#bae6fd;font-weight:700;">الصافي</div>
+                <div style="font-size:13px;font-weight:900;color:#ffffff;" dir="ltr">${fmtMoney(netMgr)}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direct Sub-Tab Switcher: [ الإنتاج ] | [ المصروف ] -->
+          <div class="subtab-bar">
+            <button type="button" class="subtab-btn ${mgrSubTab === 'prod' ? 'active' : ''}" onclick="switchMgrSubTab('prod')">الإنتاج</button>
+            <button type="button" class="subtab-btn ${mgrSubTab === 'exp' ? 'active' : ''}" onclick="switchMgrSubTab('exp')">المصروف</button>
+          </div>
+
+          ${subBodyHTML}
+        `;
+      }
+
+      function switchMgrSubTab(sub) {
+        mgrSubTab = sub;
+        renderActiveTab();
+      }
+
+      function toggleMgrDateScope() {
+        mgrDateScope = mgrDateScope === 'selected' ? 'all' : 'selected';
+        mgrProdPage = 1;
+        mgrExpPage = 1;
+        renderActiveTab();
+      }
+
+      function onMgrSelectGrade(grade) {
+        mgrSelectedGrade = grade;
+        renderActiveTab();
+      }
+
+      function onMgrPriceModeChange(mode) {
+        mgrPriceMode = mode;
+        renderActiveTab();
+        if (mode === 'custom') {
+          const inp = document.getElementById('mgr-prod-price');
+          if (inp) inp.focus();
+        }
+      }
+
+      function onMgrSelectExpCat(cat) {
+        mgrExpenseCat = cat;
+        renderActiveTab();
+      }
+
+      function changeMgrProdPage(delta) {
+        mgrProdPage += delta;
+        renderActiveTab();
+      }
+
+      function changeMgrExpPage(delta) {
+        mgrExpPage += delta;
+        renderActiveTab();
+      }
+
+      function addMgrProduction(e) {
+        e.preventDefault();
+        const boat = getActiveBoat();
+        const kg = Math.max(0, numVal(document.getElementById('mgr-prod-kg').value));
+        const unitPrice = Math.max(0, numVal(document.getElementById('mgr-prod-price').value));
+        if (kg <= 0) {
+          showToast('الرجاء إدخال كمية أكبر من الصفر', 'error');
+          return;
+        }
+        if (!Array.isArray(boat.managerProduction)) boat.managerProduction = [];
+        boat.managerProduction.unshift({
+          id: 'mp-' + Date.now(),
+          date: boat.todayDate || getTodayISO(),
+          grade: mgrSelectedGrade,
+          kg: kg,
+          unitPrice: unitPrice,
+          note: ''
+        });
+        mgrProdPage = 1;
+        persistState(true, 'إضافة إنتاج المسير (' + boat.name + ')');
+        renderActiveTab();
+        showToast('تم تسجيل إنتاج المسير', 'success');
+      }
+
+      function deleteMgrProduction(id) {
+        const boat = getActiveBoat();
+        boat.managerProduction = (boat.managerProduction || []).filter(x => x.id !== id);
+        persistState(true, 'حذف سجل إنتاج للمسير (' + boat.name + ')');
+        renderActiveTab();
+        showToast('تم حذف سجل الإنتاج', 'info');
+      }
+
+      function addMgrExpense(e) {
+        e.preventDefault();
+        const boat = getActiveBoat();
+        const item = document.getElementById('mgr-exp-item').value.trim();
+        const amount = Math.max(0, numVal(document.getElementById('mgr-exp-amount').value));
+        if (!item || amount <= 0) {
+          showToast('الرجاء إدخال البيان والمبلغ', 'error');
+          return;
+        }
+        if (!Array.isArray(boat.managerExpenses)) boat.managerExpenses = [];
+        boat.managerExpenses.unshift({
+          id: 'me-' + Date.now(),
+          date: boat.todayDate || getTodayISO(),
+          item: item,
+          category: mgrExpenseCat,
+          amount: amount
+        });
+        mgrExpPage = 1;
+        persistState(true, 'إضافة مصروف المسير (' + boat.name + '): ' + item);
+        renderActiveTab();
+        showToast('تم تسجيل مصروف المسير', 'success');
+      }
+
+      function deleteMgrExpense(id) {
+        const boat = getActiveBoat();
+        boat.managerExpenses = (boat.managerExpenses || []).filter(x => x.id !== id);
+        persistState(true, 'حذف مصروف للمسير (' + boat.name + ')');
+        renderActiveTab();
+        showToast('تم حذف المصروف', 'info');
+      }
+
+      /* ========================================================================
+         12. TAB 6: PRICING (الأسعار — 4 COMPACT CARDS, NO EXTRA TABLES)
+         ======================================================================== */
+      function renderPricingTab() {
+        const boat = getActiveBoat();
+
+        const cardsHTML = GRADES.map(g => {
+          const info = GRADE_INFO[g];
+          const sell = boat.pricing[g].sellPrice;
+          const crew = boat.pricing[g].crewPrice;
+          const diff = sell - crew;
+          return `
+            <div class="card flex-between" style="padding:7px 10px;gap:8px;">
+              <div style="min-width:95px;">
+                <span class="grade-pill ${info.cls}">${info.label} — ${info.desc}</span>
+                <div style="font-size:10px;font-weight:800;margin-top:4px;color:${diff >= 0 ? '#059669' : '#dc2626'};" id="price-diff-${g}">
+                  الفارق: <span dir="ltr">${fmtMoney(diff)}</span>
+                </div>
+              </div>
+
+              <div style="flex:1;max-width:120px;">
+                <label class="field-label" style="margin-bottom:2px;">سعر البيع الفعلي</label>
+                <input type="number" min="0" step="any"
+                  class="input-field input-compact text-navy"
+                  value="${sell}"
+                  oninput="onSellPriceInput('${g}', this.value)" />
+              </div>
+
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:5px 8px;text-align:center;min-width:92px;">
+                <div style="font-size:9px;font-weight:800;color:#92400e;">سعر البحارة</div>
+                <div style="font-size:13px;font-weight:900;color:#b45309;" dir="ltr">${fmtMoney(crew)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <!-- Top Bar: Currency + Apply Sell Price to All -->
+          <div class="card flex-between" style="flex-shrink:0;padding:7px 9px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:11px;font-weight:800;color:#0f2942;">العملة:</span>
+              <input type="text" class="input-field" style="width:76px;padding:4px 6px;text-align:center;font-size:11.5px;" value="${escHTML(state.currency)}" oninput="onCurrencyChange(this.value)" />
+            </div>
+            <button type="button" class="btn btn-xs btn-navy" onclick="applySellPricesToAll()">تعميم سعر البيع على الكل</button>
+          </div>
+
+          <!-- 4 Compact Grade Cards -->
+          <div class="pricing-grid-4">
+            ${cardsHTML}
+          </div>
+        `;
+      }
+
+      function onCurrencyChange(val) {
+        state.currency = val.trim() || 'أوقية';
+        persistState(true, 'تغيير العملة إلى ' + state.currency);
+      }
+
+      function onSellPriceInput(grade, rawVal) {
+        const boat = getActiveBoat();
+        const sell = Math.max(0, numVal(rawVal));
+        boat.pricing[grade].sellPrice = sell;
+        persistState(true, 'تعديل سعر بيع ' + grade + ' لسفينة ' + boat.name);
+
+        const diff = sell - boat.pricing[grade].crewPrice;
+        const diffEl = document.getElementById('price-diff-' + grade);
+        if (diffEl) {
+          diffEl.style.color = diff >= 0 ? '#059669' : '#dc2626';
+          diffEl.innerHTML = 'الفارق: <span dir="ltr">' + fmtMoney(diff) + '</span>';
+        }
+      }
+
+      function applySellPricesToAll() {
+        const src = getActiveBoat();
+        state.boats.forEach(b => {
+          if (b.id !== src.id) {
+            GRADES.forEach(g => { b.pricing[g].sellPrice = src.pricing[g].sellPrice; });
+          }
+        });
+        persistState(true, 'تعميم سعر البيع على كافة السفن');
+        showToast('تم تعميم سعر البيع الفعلي على كافة السفن', 'success');
+      }
+
+      /* ========================================================================
+         13. TAB 7: FLEET / BOATS (السفن — PAGINATED CARDS + TABBED MODAL)
+         ======================================================================== */
+      function renderBoatsTab() {
+        const activeId = state.activeBoatId;
+        const paged = paginateArray(state.boats, boatsPage, 3);
+        boatsPage = paged.page;
+
+        const cardsHTML = paged.items.map(b => {
+          const m = calcBoatMetrics(b);
+          const isActive = b.id === activeId;
+          return `
+            <div class="card" style="padding:8px 10px;${isActive ? 'border:2px solid #0ea5e9;background:#f0f9ff;' : ''}">
+              <div class="flex-between" style="cursor:pointer;" onclick="openShipModal('${escHTML(b.id)}')">
+                <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                  <div style="width:36px;height:36px;border-radius:10px;background:#ffffff;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                      <rect x="13" y="5" width="6" height="4" rx="1" fill="#0f2942"/>
+                      <path d="M8 9H24L25.5 17H6.5L8 9Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                      <path d="M4 17H28L25 24.5H7L4 17Z" fill="#ef4444"/>
+                      <path d="M3 26C6 24.5 9 27.5 12 26C15 24.5 18 27.5 21 26C24 24.5 27 27.5 29 26" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div style="min-width:0;">
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <strong style="font-size:13.5px;color:#0f2942;">${escHTML(b.name)}</strong>
+                      ${isActive ? '<span class="cat-badge cat-ice">نشطة</span>' : ''}
+                    </div>
+                    <div style="font-size:10px;color:#64748b;">الربان: ${escHTML(b.captain)} • 6 بحارة</div>
+                  </div>
+                </div>
+                <div style="text-align:left;flex-shrink:0;">
+                  <div style="font-size:9.5px;color:#64748b;">الصافي</div>
+                  <div class="${m.netVesselProfit >= 0 ? 'text-emerald' : 'text-red'}" style="font-size:13px;font-weight:900;" dir="ltr">${fmtMoney(m.netVesselProfit)}</div>
+                </div>
+              </div>
+
+              <div class="grid-3" style="margin-top:6px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:4px 6px;text-align:center;font-size:10px;">
+                <div><span class="text-muted">إنتاج:</span> <strong dir="ltr">${fmtNum(m.totalProductionKg)} كغ</strong></div>
+                <div><span class="text-muted">بيع:</span> <strong dir="ltr">${fmtMoney(m.totalSalesValue)}</strong></div>
+                <div><span class="text-muted">ديون:</span> <strong class="text-red" dir="ltr">${fmtMoney(m.totalDebt)}</strong></div>
+              </div>
+
+              <div class="grid-2" style="margin-top:6px;">
+                <button type="button" class="btn btn-xs ${isActive ? 'btn-navy' : 'btn-ghost'}" onclick="selectBoat('${escHTML(b.id)}')">
+                  ${isActive ? 'السفينة النشطة' : 'تفعيل السفينة'}
+                </button>
+                <button type="button" class="btn btn-xs btn-cyan" onclick="openShipModal('${escHTML(b.id)}')">تعديل السفينة والأسعار</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <!-- Top Bar -->
+          <div class="flex-between" style="flex-shrink:0;">
+            <div>
+              <div class="sec-title">أسطول السفن (${state.boats.length})</div>
+              <div class="sec-subtitle">اضغط على أي سفينة لتعديل طاقمها وأسعار بحارتها</div>
+            </div>
+            <div style="display:flex;gap:5px;">
+              <button type="button" class="btn btn-xs btn-ghost" onclick="openHistoryModal()">سجل الأيام (${state.history.length})</button>
+              <button type="button" class="btn btn-xs btn-navy" onclick="openShipModal(null)">+ سفينة جديدة</button>
+            </div>
+          </div>
+
+          <!-- Paginated Fleet Cards -->
+          <div class="card flex-fill-card" style="background:transparent;border:none;box-shadow:none;padding:0;">
+            <div class="paged-items-wrap">${cardsHTML}</div>
+            ${paged.totalPages > 1 ? '<div class="card" style="padding:4px 8px;margin-top:4px;">' + renderPagerHTML(paged.page, paged.totalPages, paged.total, 'changeBoatsPage(-1)', 'changeBoatsPage(1)') + '</div>' : ''}
+          </div>
+        `;
+      }
+
+      function changeBoatsPage(delta) {
+        boatsPage += delta;
+        renderActiveTab();
+      }
+
+      function switchShipModalSubTab(sub) {
+        const infoBtn = document.getElementById('ship-st-btn-info');
+        const priceBtn = document.getElementById('ship-st-btn-prices');
+        const infoDiv = document.getElementById('ship-st-info');
+        const priceDiv = document.getElementById('ship-st-prices');
+
+        infoBtn.classList.toggle('active', sub === 'info');
+        priceBtn.classList.toggle('active', sub === 'prices');
+        infoDiv.style.display = sub === 'info' ? 'block' : 'none';
+        priceDiv.style.display = sub === 'prices' ? 'block' : 'none';
+      }
+
+      function openShipModal(boatId) {
+        updateCurrencyLabels();
+        switchShipModalSubTab('info');
+        const isEdit = Boolean(boatId);
+        const boat = isEdit ? state.boats.find(b => b.id === boatId) : null;
+        const sailorInputs = document.querySelectorAll('.ship-sailor-name');
+        const delWrap = document.getElementById('ship-form-delete-wrap');
+
+        if (isEdit && boat) {
+          document.getElementById('ship-form-title').textContent = 'تعديل السفينة — ' + boat.name;
+          document.getElementById('ship-form-id').value = boat.id;
+          document.getElementById('ship-form-name').value = boat.name;
+          document.getElementById('ship-form-captain').value = boat.captain;
+
+          sailorInputs.forEach((inp, i) => {
+            inp.value = (boat.sailors[i] && boat.sailors[i].name) || ('بحار ' + (i + 1));
+          });
+          GRADES.forEach(g => {
+            document.getElementById('ship-form-crew-' + g).value = boat.pricing[g].crewPrice;
+          });
+          delWrap.style.display = state.boats.length > 1 ? 'block' : 'none';
+        } else {
+          const refPricing = getActiveBoat().pricing;
+          document.getElementById('ship-form-title').textContent = 'إضافة سفينة جديدة';
+          document.getElementById('ship-form-id').value = '';
+          document.getElementById('ship-form-name').value = '';
+          document.getElementById('ship-form-captain').value = '';
+
+          sailorInputs.forEach((inp, i) => {
+            inp.value = 'بحار ' + (i + 1);
+          });
+          GRADES.forEach(g => {
+            document.getElementById('ship-form-crew-' + g).value = refPricing[g].crewPrice;
+          });
+          delWrap.style.display = 'none';
+        }
+
+        openModal('modal-ship-form');
+      }
+
+      function submitShipForm(e) {
+        e.preventDefault();
+        const id = document.getElementById('ship-form-id').value.trim();
+        const name = document.getElementById('ship-form-name').value.trim();
+        const captain = document.getElementById('ship-form-captain').value.trim();
+        const sailorInputs = Array.from(document.querySelectorAll('.ship-sailor-name'));
+        const names = sailorInputs.map((inp, i) => inp.value.trim() || ('بحار ' + (i + 1)));
+
+        const crewPrices = {};
+        GRADES.forEach(g => {
+          crewPrices[g] = Math.max(0, numVal(document.getElementById('ship-form-crew-' + g).value));
+        });
+
+        if (!name || !captain) {
+          switchShipModalSubTab('info');
+          showToast('الرجاء إدخال اسم السفينة والربان', 'error');
+          return;
+        }
+
+        if (id) {
+          const boat = state.boats.find(b => b.id === id);
+          if (!boat) return;
+          boat.name = name;
+          boat.captain = captain;
+          boat.sailors.forEach((s, i) => { s.name = names[i]; });
+          GRADES.forEach(g => { boat.pricing[g].crewPrice = crewPrices[g]; });
+
+          persistState(true, 'تحديث بيانات وأسعار سفينة ' + name);
+          showToast('تم حفظ بيانات السفينة وأسعار البحارة', 'success');
+        } else {
+          const refPricing = getActiveBoat().pricing;
+          const newPricing = {};
+          GRADES.forEach(g => {
+            newPricing[g] = { sellPrice: refPricing[g].sellPrice, crewPrice: crewPrices[g] };
+          });
+
+          const newBoat = {
+            id: 'ship-' + Date.now(),
+            name: name,
+            captain: captain,
+            todayDate: getTodayISO(),
+            pricing: newPricing,
+            boatProduction: createEmptyProduction(),
+            sailors: names.map((nm, i) => ({
+              id: i + 1,
+              name: nm,
+              production: createEmptyProduction(),
+              debt: 0,
+              autoDeduct: true,
+              manualDeduction: 0
+            })),
+            purchases: [],
+            managerProduction: [],
+            managerExpenses: []
+          };
+
+          state.boats.push(newBoat);
+          state.activeBoatId = newBoat.id;
+          boatsPage = Math.ceil(state.boats.length / 3);
+          persistState(true, 'إضافة سفينة جديدة: ' + name);
+          showToast('تمت إضافة السفينة بنجاح', 'success');
+        }
+
+        closeModal('modal-ship-form');
+        renderHeaderShipSelect();
+        renderActiveTab();
+      }
+
+      function confirmDeleteEditingShip() {
+        const id = document.getElementById('ship-form-id').value.trim();
+        const boat = state.boats.find(b => b.id === id);
+        if (!boat || state.boats.length <= 1) return;
+
+        openConfirmModal({
+          title: 'حذف السفينة',
+          message: 'هل أنت متأكد من حذف سفينة "' + boat.name + '" نهائياً من الأسطول؟',
+          btnClass: 'btn-red',
+          okLabel: 'حذف السفينة',
+          onConfirm: function () {
+            state.boats = state.boats.filter(b => b.id !== id);
+            if (state.activeBoatId === id) state.activeBoatId = state.boats[0].id;
+            persistState(true, 'حذف سفينة: ' + boat.name);
+            closeModal('modal-ship-form');
+            renderHeaderShipSelect();
+            renderActiveTab();
+            showToast('تم حذف السفينة', 'info');
+          }
+        });
+      }
+
+      /* ========================================================================
+         14. SETTLEMENT PREVIEW (3 SUB-TABS + PRINT SHEET) & HISTORY ARCHIVE
+         ======================================================================== */
+      function onTodayDateChange(val) {
+        const boat = getActiveBoat();
+        boat.todayDate = val || getTodayISO();
+        mgrProdPage = 1;
+        mgrExpPage = 1;
+        persistState(true, 'تغيير تاريخ اليومية إلى ' + boat.todayDate);
+        renderActiveTab();
+      }
+
+      function promptSaveDayToHistory() {
+        const boat = getActiveBoat();
+        const m = calcBoatMetrics(boat);
+        openConfirmModal({
+          title: 'حفظ التصفية في سجل الأيام',
+          message: 'حفظ يومية "' + boat.name + '" بتاريخ ' + boat.todayDate + ' (صافي الربح: ' + fmtMoney(m.netVesselProfit) + ' ' + state.currency + ')؟',
+          check1Label: 'خصم الديون المستقطعة (' + fmtMoney(m.totalDebtDeducted) + ' ' + state.currency + ') من رصيد البحارة',
+          check1Default: true,
+          check2Label: 'تصفير خانات إنتاج اليوم والمشتريات للبدء بيوم جديد',
+          check2Default: false,
+          btnClass: 'btn-navy',
+          okLabel: 'حفظ في السجل',
+          onConfirm: function (checks) {
+            const snapshot = {
+              id: 'hist-' + Date.now(),
+              boatId: boat.id,
+              boatName: boat.name,
+              captain: boat.captain,
+              date: boat.todayDate,
+              savedAt: getTimeStampLabel(),
+              totalKg: m.totalProductionKg,
+              vesselKg: m.vesselProdKg,
+              vesselSalesVal: m.vesselSalesVal,
+              sailorsKg: m.sailorsProdKg,
+              sailorsSalesVal: m.sailorsSalesVal,
+              totalSales: m.totalSalesValue,
+              totalSailorsShare: m.totalSailorsShare,
+              totalDebtDeducted: m.totalDebtDeducted,
+              totalNetPaid: m.totalNetPaidToSailors,
+              totalPurchases: m.totalPurchases,
+              netProfit: m.netVesselProfit,
+              sailors: m.sailorMetrics.map(sm => ({
+                name: sm.name,
+                kg: sm.kg,
+                grossShare: sm.grossShare,
+                deduction: sm.deduction,
+                netPayable: sm.netPayable,
+                debtAfter: checks.check1 ? sm.remainingDebt : sm.debt
+              })),
+              purchases: boat.purchases.map(p => ({ item: p.item, category: p.category, amount: p.amount, date: p.date }))
+            };
+
+            state.history.unshift(snapshot);
+            if (checks.check1) {
+              boat.sailors.forEach((s, idx) => {
+                s.debt = m.sailorMetrics[idx].remainingDebt;
+                s.manualDeduction = 0;
+              });
+            }
+            if (checks.check2) {
+              boat.boatProduction = createEmptyProduction();
+              boat.sailors.forEach(s => { s.production = createEmptyProduction(); });
+              boat.purchases = [];
+            }
+
+            persistState(true, 'حفظ تصفية يوم ' + snapshot.date + ' (' + boat.name + ')');
+            renderActiveTab();
+            showToast('تم حفظ اليومية في سجل الأيام بنجاح', 'success');
+          }
+        });
+      }
+
+      function openHistoryModal() {
+        historyPage = 1;
+        renderHistoryModalBody();
+        openModal('modal-history');
+      }
+
+      function renderHistoryModalBody() {
+        const body = document.getElementById('history-modal-body');
+        if (!body) return;
+        const paged = paginateArray(state.history, historyPage, 4);
+        historyPage = paged.page;
+
+        const itemsHTML = paged.items.length === 0
+          ? '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#64748b;font-weight:700;">لا توجد تصفيات محفوظة في سجل الأيام بعد.</div>'
+          : paged.items.map(rec => `
+              <div class="list-row-card">
+                <div style="min-width:0;">
+                  <strong style="font-size:12.5px;color:#0f2942;">${escHTML(rec.boatName)}</strong>
+                  <div style="font-size:10px;color:#64748b;" dir="ltr">${escHTML(rec.date)} • ${fmtNum(rec.totalKg)} كغ</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+                  <strong class="${rec.netProfit >= 0 ? 'text-emerald' : 'text-red'}" style="font-size:12px;" dir="ltr">${fmtMoney(rec.netProfit)}</strong>
+                  <button type="button" class="btn btn-xs btn-cyan" onclick="viewHistoryRecord('${escHTML(rec.id)}')">عرض</button>
+                  <button type="button" class="btn btn-xs btn-red" onclick="deleteHistoryRecord('${escHTML(rec.id)}')">حذف</button>
+                </div>
+              </div>
+            `).join('');
+
+        body.innerHTML = `
+          <div class="paged-items-wrap">${itemsHTML}</div>
+          ${renderPagerHTML(paged.page, paged.totalPages, paged.total, 'changeHistoryPage(-1)', 'changeHistoryPage(1)')}
+        `;
+      }
+
+      function changeHistoryPage(delta) {
+        historyPage += delta;
+        renderHistoryModalBody();
+      }
+
+      function getCurrentSettlementSnapshot() {
+        const boat = getActiveBoat();
+        const m = calcBoatMetrics(boat);
+        return {
+          boatName: boat.name,
+          captain: boat.captain,
+          date: boat.todayDate,
+          vesselKg: m.vesselProdKg,
+          sailorsKg: m.sailorsProdKg,
+          totalKg: m.totalProductionKg,
+          totalSales: m.totalSalesValue,
+          totalSailorsShare: m.totalSailorsShare,
+          totalDebtDeducted: m.totalDebtDeducted,
+          totalNetPaid: m.totalNetPaidToSailors,
+          totalPurchases: m.totalPurchases,
+          netProfit: m.netVesselProfit,
+          sailors: m.sailorMetrics.map(sm => ({
+            name: sm.name,
+            kg: sm.kg,
+            grossShare: sm.grossShare,
+            deduction: sm.deduction,
+            netPayable: sm.netPayable
+          })),
+          purchases: boat.purchases
+        };
+      }
+
+      function buildWhatsAppText(rec) {
+        const lines = [
+          '*كشف تصفية سفينة: ' + rec.boatName + '*',
+          'الربان: ' + rec.captain,
+          'التاريخ: ' + rec.date,
+          '-----------------',
+          'إجمالي الإنتاج: ' + fmtNum(rec.totalKg) + ' كغ',
+          'إجمالي المبيعات: ' + fmtMoney(rec.totalSales) + ' ' + state.currency,
+          'حصة البحارة: ' + fmtMoney(rec.totalSailorsShare) + ' ' + state.currency,
+          'الديون المخصومة: ' + fmtMoney(rec.totalDebtDeducted) + ' ' + state.currency,
+          'الصافي المدفوع للبحارة: ' + fmtMoney(rec.totalNetPaid) + ' ' + state.currency,
+          'المشتريات والمصاريف: ' + fmtMoney(rec.totalPurchases) + ' ' + state.currency,
+          '*صافي ربح السفينة: ' + fmtMoney(rec.netProfit) + ' ' + state.currency + '*',
+          '-----------------',
+          '*تفاصيل البحارة:*'
+        ];
+        rec.sailors.forEach((s, i) => {
+          lines.push((i + 1) + '. ' + s.name + ': ' + fmtNum(s.kg) + ' كغ | حصة: ' + fmtMoney(s.grossShare) + ' | خصم: ' + fmtMoney(s.deduction) + ' | صافي: ' + fmtMoney(s.netPayable));
+        });
+        return lines.join('\n');
+      }
+
+      function buildFullPrintHTML(rec) {
+        const sailorsRows = rec.sailors.map((s, i) => `
+          <tr>
+            <td>${i + 1}. ${escHTML(s.name)}</td>
+            <td dir="ltr">${fmtNum(s.kg)}</td>
+            <td dir="ltr">${fmtMoney(s.grossShare)}</td>
+            <td dir="ltr">${fmtMoney(s.deduction)}</td>
+            <td dir="ltr"><strong>${fmtMoney(s.netPayable)}</strong></td>
+          </tr>
+        `).join('');
+
+        const purRows = rec.purchases.length === 0
+          ? '<tr><td colspan="3" style="text-align:center;">لا توجد مشتريات</td></tr>'
+          : rec.purchases.map(p => `
+              <tr><td>${escHTML(p.item)}</td><td>${escHTML(p.category)}</td><td dir="ltr">${fmtMoney(p.amount)}</td></tr>
+            `).join('');
+
+        return `
+          <div style="font-family:system-ui,sans-serif;color:#0f172a;">
+            <h2 style="font-size:18px;font-weight:900;border-bottom:2px solid #0f2942;padding-bottom:6px;margin-bottom:10px;">
+              كشف تصفية سفينة: ${escHTML(rec.boatName)} (${escHTML(rec.date)}) — الربان: ${escHTML(rec.captain)}
+            </h2>
+            <p style="font-size:13px;margin-bottom:10px;">
+              الإنتاج: <strong>${fmtNum(rec.totalKg)} كغ</strong> | المبيعات: <strong>${fmtMoney(rec.totalSales)} ${escHTML(state.currency)}</strong> |
+              حصص البحارة: <strong>${fmtMoney(rec.totalSailorsShare)}</strong> | المشتريات: <strong>${fmtMoney(rec.totalPurchases)}</strong> |
+              صافي السفينة: <strong>${fmtMoney(rec.netProfit)} ${escHTML(state.currency)}</strong>
+            </p>
+            <h3 style="font-size:14px;margin:10px 0 4px;">تصفية البحارة</h3>
+            <table class="data-table" style="border:1px solid #cbd5e1;">
+              <thead><tr><th>البحار</th><th>كغ</th><th>الحصة</th><th>الخصم</th><th>الصافي</th></tr></thead>
+              <tbody>${sailorsRows}</tbody>
+            </table>
+            <h3 style="font-size:14px;margin:12px 0 4px;">المشتريات</h3>
+            <table class="data-table" style="border:1px solid #cbd5e1;">
+              <thead><tr><th>البيان</th><th>التصنيف</th><th>المبلغ</th></tr></thead>
+              <tbody>${purRows}</tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      function openCurrentSettlementPreview() {
+        activeReportRecord = getCurrentSettlementSnapshot();
+        reportSubTab = 'summary';
+        reportPurPage = 1;
+        renderReportModalBody();
+        openModal('modal-report');
+      }
+
+      function viewHistoryRecord(histId) {
+        const rec = state.history.find(h => h.id === histId);
+        if (!rec) return;
+        activeReportRecord = rec;
+        reportSubTab = 'summary';
+        reportPurPage = 1;
+        renderReportModalBody();
+        openModal('modal-report');
+      }
+
+      function switchReportSubTab(sub) {
+        reportSubTab = sub;
+        renderReportModalBody();
+      }
+
+      function changeReportPurPage(delta) {
+        reportPurPage += delta;
+        renderReportModalBody();
+      }
+
+      function renderReportModalBody() {
+        const rec = activeReportRecord;
+        if (!rec) return;
+        currentReportText = buildWhatsAppText(rec);
+        document.getElementById('print-only-sheet').innerHTML = buildFullPrintHTML(rec);
+        document.getElementById('rep-modal-title').textContent = 'تصفية: ' + rec.boatName + ' (' + rec.date + ')';
+
+        const tabsHTML = `
+          <div class="subtab-bar cols-3">
+            <button type="button" class="subtab-btn ${reportSubTab === 'summary' ? 'active' : ''}" onclick="switchReportSubTab('summary')">ملخص السفينة</button>
+            <button type="button" class="subtab-btn ${reportSubTab === 'sailors' ? 'active' : ''}" onclick="switchReportSubTab('sailors')">تصفية البحارة</button>
+            <button type="button" class="subtab-btn ${reportSubTab === 'purchases' ? 'active' : ''}" onclick="switchReportSubTab('purchases')">المشتريات (${rec.purchases.length})</button>
+          </div>
+        `;
+
+        let contentHTML = '';
+        if (reportSubTab === 'summary') {
+          contentHTML = `
+            <div class="stack-sm">
+              <div class="card" style="background:#f8fafc;">
+                <div class="flex-between">
+                  <span class="text-muted">الربان / المسير:</span>
+                  <strong>${escHTML(rec.captain)}</strong>
+                </div>
+                <div class="flex-between" style="margin-top:4px;">
+                  <span class="text-muted">إجمالي الإنتاج:</span>
+                  <strong class="text-cyan" dir="ltr">${fmtNum(rec.totalKg)} كغ</strong>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="kpi-box"><div class="kpi-title">إجمالي المبيعات</div><div class="kpi-num text-navy" dir="ltr">${fmtMoney(rec.totalSales)}</div></div>
+                <div class="kpi-box"><div class="kpi-title">حصة البحارة</div><div class="kpi-num text-amber" dir="ltr">${fmtMoney(rec.totalSailorsShare)}</div></div>
+                <div class="kpi-box"><div class="kpi-title">الديون المخصومة</div><div class="kpi-num text-red" dir="ltr">${fmtMoney(rec.totalDebtDeducted)}</div></div>
+                <div class="kpi-box"><div class="kpi-title">المشتريات والمصاريف</div><div class="kpi-num text-red" dir="ltr">${fmtMoney(rec.totalPurchases)}</div></div>
+              </div>
+              <div class="flex-between" style="background:#d1fae5;border:1px solid #a7f3d0;padding:10px;border-radius:10px;">
+                <strong style="color:#065f46;">صافي ربح السفينة</strong>
+                <strong style="font-size:16px;color:#065f46;" dir="ltr">${fmtMoney(rec.netProfit)} ${escHTML(state.currency)}</strong>
+              </div>
+            </div>
+          `;
+        } else if (reportSubTab === 'sailors') {
+          contentHTML = `
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>البحار</th><th>كغ</th><th>الحصة</th><th>الخصم</th><th>الصافي</th></tr></thead>
+                <tbody>
+                  ${rec.sailors.map((s, i) => `
+                    <tr>
+                      <td>${i + 1}. ${escHTML(s.name)}</td>
+                      <td dir="ltr">${fmtNum(s.kg)}</td>
+                      <td dir="ltr" class="text-amber">${fmtMoney(s.grossShare)}</td>
+                      <td dir="ltr" class="text-red">${fmtMoney(s.deduction)}</td>
+                      <td dir="ltr" class="text-emerald" style="font-weight:900;">${fmtMoney(s.netPayable)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          const pagedPur = paginateArray(rec.purchases, reportPurPage, 4);
+          reportPurPage = pagedPur.page;
+          const rows = pagedPur.items.length === 0
+            ? '<div style="text-align:center;color:#64748b;padding:18px;">لا توجد مشتريات مسجلة.</div>'
+            : pagedPur.items.map(p => `
+                <div class="list-row-card">
+                  <div>
+                    <strong style="font-size:12px;">${escHTML(p.item)}</strong>
+                    <span class="cat-badge ${getCategoryClass(p.category)}">${escHTML(p.category)}</span>
+                  </div>
+                  <strong class="text-red" dir="ltr">${fmtMoney(p.amount)}</strong>
+                </div>
+              `).join('');
+          contentHTML = `
+            <div class="paged-items-wrap">${rows}</div>
+            ${renderPagerHTML(pagedPur.page, pagedPur.totalPages, pagedPur.total, 'changeReportPurPage(-1)', 'changeReportPurPage(1)')}
+          `;
+        }
+
+        document.getElementById('rep-modal-body').innerHTML = `
+          ${tabsHTML}
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;">
+            ${contentHTML}
+          </div>
+          <div class="grid-2">
+            <button type="button" class="btn btn-cyan" onclick="copyReportSummary()">نسخ واتساب</button>
+            <button type="button" class="btn btn-emerald" onclick="window.print()">طباعة الكشف</button>
+          </div>
+        `;
+      }
+
+      function deleteHistoryRecord(histId) {
+        openConfirmModal({
+          title: 'حذف سجل يوم',
+          message: 'هل تريد حذف هذا السجل من أرشيف الأيام المحفوظة؟',
+          btnClass: 'btn-red',
+          okLabel: 'حذف',
+          onConfirm: function () {
+            state.history = state.history.filter(h => h.id !== histId);
+            persistState(true, 'حذف سجل من أرشيف الأيام');
+            renderHistoryModalBody();
+            renderActiveTab();
+            showToast('تم حذف السجل', 'info');
+          }
+        });
+      }
+
+      function copyTextSafely(text) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (ok) return true;
+        } catch (e) { /* fallback */ }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).catch(() => {});
+          return true;
+        }
+        return false;
+      }
+
+      function copyReportSummary() {
+        if (!currentReportText) return;
+        copyTextSafely(currentReportText);
+        showToast('تم نسخ ملخص التصفية لواتساب', 'success');
+      }
+
+      /* ========================================================================
+         15. OFFLINE & AUTOMATIC CLOUD SYNC ENGINE (TABBED MODAL)
+         ======================================================================== */
+      function updateHeaderSyncBadge() {
+        const btn = document.getElementById('hdr-sync-btn');
+        const txt = document.getElementById('hdr-sync-text');
+        if (!btn || !txt) return;
+
+        const online = navigator.onLine;
+        const pending = state.sync.pendingChangesCount || 0;
+        const hasUrl = Boolean((state.sync.syncUrl || '').trim());
+
+        btn.classList.remove('badge-green', 'badge-amber', 'badge-gray');
+
+        if (isSyncing) {
+          btn.classList.add('badge-amber');
+          txt.textContent = 'مزامنة...';
+          return;
+        }
+        if (!online) {
+          btn.classList.add('badge-gray');
+          txt.textContent = pending > 0 ? ('أوفلاين (' + pending + ')') : 'أوفلاين';
+          return;
+        }
+        if (hasUrl && pending > 0) {
+          btn.classList.add('badge-amber');
+          txt.textContent = 'انتظار (' + pending + ')';
+        } else {
+          btn.classList.add('badge-green');
+          txt.textContent = hasUrl ? 'متزامن' : 'حفظ محلي';
+        }
+      }
+
+      function scheduleAutoSync() {
+        if (!state.sync || !state.sync.autoSync) return;
+        if (!navigator.onLine) return;
+        if (!(state.sync.syncUrl || '').trim()) return;
+
+        if (autoSyncTimer) clearTimeout(autoSyncTimer);
+        autoSyncTimer = setTimeout(() => {
+          triggerAutoSyncIfReady();
+        }, 1500);
+      }
+
+      function triggerAutoSyncIfReady() {
+        if (isSyncing) return;
+        if (!navigator.onLine) return;
+        if (!state.sync || !state.sync.autoSync) return;
+        if (!(state.sync.syncUrl || '').trim()) return;
+        if ((state.sync.pendingChangesCount || 0) <= 0) return;
+        performCloudSync(true);
+      }
+
+      async function performCloudSync(isSilent) {
+        const url = (state.sync.syncUrl || '').trim();
+        if (!url) {
+          if (!isSilent) showToast('أدخل رابط المزامنة السحابية أو استخدم النسخ الاحتياطي', 'info');
+          return;
+        }
+        if (!navigator.onLine) {
+          if (!isSilent) showToast('الجهاز غير متصل بالإنترنت — البيانات محفوظة محلياً', 'info');
+          updateHeaderSyncBadge();
+          return;
+        }
+        if (isSyncing) return;
+
+        isSyncing = true;
+        updateHeaderSyncBadge();
+
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              app: 'fishing-fleet-manager',
+              syncedAt: new Date().toISOString(),
+              data: state
+            })
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+
+          state.sync.pendingChangesCount = 0;
+          state.sync.lastSyncedAt = getTimeStampLabel();
+          pushSyncLog(isSilent ? 'مزامنة تلقائية سحابية ناجحة' : 'مزامنة يدوية سحابية ناجحة');
+          saveToLocalStorage();
+          if (!isSilent) showToast('تمت المزامنة السحابية بنجاح', 'success');
+        } catch (err) {
+          pushSyncLog('تعذر الوصول للخادم: حفظ محلي آمن');
+          saveToLocalStorage();
+          if (!isSilent) showToast('تعذر الاتصال بالخادم — البيانات محفوظة محلياً', 'error');
+        } finally {
+          isSyncing = false;
+          updateHeaderSyncBadge();
+          if (document.getElementById('modal-sync').classList.contains('open')) {
+            renderSyncModalBody();
+          }
+        }
+      }
+
+      function openSyncModal() {
+        syncModalSubTab = 'cloud';
+        renderSyncModalBody();
+        openModal('modal-sync');
+      }
+
+      function switchSyncSubTab(sub) {
+        syncModalSubTab = sub;
+        renderSyncModalBody();
+      }
+
+      function renderSyncModalBody() {
+        const body = document.getElementById('sync-modal-body');
+        if (!body) return;
+        const online = navigator.onLine;
+        const pending = state.sync.pendingChangesCount || 0;
+
+        const statusBanner = `
+          <div class="card" style="background:${online ? '#d1fae5' : '#f1f5f9'};border-color:${online ? '#a7f3d0' : '#cbd5e1'};padding:8px 10px;">
+            <div class="flex-between">
+              <strong style="font-size:12px;color:${online ? '#065f46' : '#334155'};">${online ? 'الجهاز متصل بالإنترنت' : 'وضع عدم الاتصال (Offline)'}</strong>
+              <span class="cat-badge ${pending > 0 ? 'cat-food' : 'cat-pers'}">${pending > 0 ? (pending + ' تغييرات بالانتظار') : 'محفوظ بالكامل'}</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin-top:2px;">آخر مزامنة: <span dir="ltr">${escHTML(state.sync.lastSyncedAt || 'محلي')}</span></div>
+          </div>
+        `;
+
+        const subTabBar = `
+          <div class="subtab-bar">
+            <button type="button" class="subtab-btn ${syncModalSubTab === 'cloud' ? 'active' : ''}" onclick="switchSyncSubTab('cloud')">المزامنة السحابية</button>
+            <button type="button" class="subtab-btn ${syncModalSubTab === 'backup' ? 'active' : ''}" onclick="switchSyncSubTab('backup')">النسخ والنقل</button>
+          </div>
+        `;
+
+        let innerHTML = '';
+        if (syncModalSubTab === 'cloud') {
+          const logsHTML = (state.sync.logs || []).slice(0, 4).map(l =>
+            '<div style="font-size:10.5px;padding:3px 0;border-bottom:1px solid #f1f5f9;" class="flex-between"><span>' + escHTML(l.msg) + '</span><span style="color:#94a3b8;" dir="ltr">' + escHTML(l.time) + '</span></div>'
+          ).join('');
+
+          innerHTML = `
+            <div class="stack-sm">
+              <div>
+                <label class="field-label">رابط Webhook / API للمزامنة التلقائية (اختياري)</label>
+                <input type="url" class="input-field" dir="ltr" value="${escHTML(state.sync.syncUrl || '')}" placeholder="https://example.com/api/fleet-sync" oninput="onSyncUrlInput(this.value)" />
+              </div>
+              <label class="toggle-pill">
+                <input type="checkbox" ${state.sync.autoSync ? 'checked' : ''} onchange="onAutoSyncToggle(this.checked)" />
+                <span>تفعيل المزامنة التلقائية عند الاتصال بالإنترنت</span>
+              </label>
+              <button type="button" class="btn btn-cyan btn-block" onclick="performCloudSync(false)">مزامنة سحابية الآن</button>
+              <div class="card" style="background:#f8fafc;padding:7px 9px;">
+                <div style="font-size:11px;font-weight:900;color:#0f2942;margin-bottom:3px;">آخر العمليات</div>
+                ${logsHTML || '<div style="font-size:10.5px;color:#64748b;">لا توجد عمليات.</div>'}
+              </div>
+            </div>
+          `;
+        } else {
+          innerHTML = `
+            <div class="stack-sm">
+              <div class="grid-2">
+                <button type="button" class="btn btn-navy" onclick="exportBackupJSON()">تصدير ملف JSON</button>
+                <label class="btn btn-ghost" style="cursor:pointer;">
+                  استيراد ملف JSON
+                  <input type="file" accept=".json,application/json" style="display:none;" onchange="importBackupJSON(event)" />
+                </label>
+              </div>
+              <div class="card stack-xs" style="background:#f8fafc;padding:8px;">
+                <div class="flex-between">
+                  <span style="font-size:11px;font-weight:800;color:#0f2942;">النقل السريع عبر كود المزامنة</span>
+                  <button type="button" class="btn btn-xs btn-emerald" onclick="copySyncCode()">نسخ الكود</button>
+                </div>
+                <textarea id="paste-sync-code-area" rows="3" class="input-field" dir="ltr" placeholder="الصق كود المزامنة من جهاز آخر هنا ثم اضغط استعادة..."></textarea>
+                <button type="button" class="btn btn-sm btn-amber btn-block" onclick="applyPastedSyncCode()">استعادة البيانات من الكود</button>
+              </div>
+            </div>
+          `;
+        }
+
+        body.innerHTML = `
+          ${statusBanner}
+          ${subTabBar}
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;">
+            ${innerHTML}
+          </div>
+        `;
+      }
+
+      function onSyncUrlInput(val) {
+        state.sync.syncUrl = val.trim();
+        saveToLocalStorage();
+        updateHeaderSyncBadge();
+      }
+
+      function onAutoSyncToggle(checked) {
+        state.sync.autoSync = Boolean(checked);
+        saveToLocalStorage();
+        if (checked) triggerAutoSyncIfReady();
+        showToast(checked ? 'تم تفعيل المزامنة التلقائية' : 'تم إيقاف المزامنة التلقائية', 'info');
+      }
+
+      function exportBackupJSON() {
+        try {
+          const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'fleet-backup-' + getTodayISO() + '.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          pushSyncLog('تصدير نسخة احتياطية JSON');
+          saveToLocalStorage();
+          showToast('تم تحميل ملف النسخة الاحتياطية', 'success');
+        } catch (e) {
+          showToast('تعذر تصدير الملف', 'error');
+        }
+      }
+
+      function importBackupJSON(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            state = normalizeState(parsed);
+            state.sync.pendingChangesCount = 0;
+            state.sync.lastSyncedAt = getTimeStampLabel();
+            pushSyncLog('استيراد بيانات من ملف JSON');
+            saveToLocalStorage();
+            renderHeaderShipSelect();
+            renderActiveTab();
+            renderSyncModalBody();
+            updateHeaderSyncBadge();
+            showToast('تم استيراد البيانات بنجاح', 'success');
+          } catch (err) {
+            showToast('ملف JSON غير صالح', 'error');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function copySyncCode() {
+        const jsonStr = JSON.stringify(state);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        copyTextSafely(encoded);
+        pushSyncLog('نسخ كود المزامنة');
+        saveToLocalStorage();
+        showToast('تم نسخ كود المزامنة', 'success');
+      }
+
+      function applyPastedSyncCode() {
+        const area = document.getElementById('paste-sync-code-area');
+        const code = (area && area.value || '').trim();
+        if (!code) {
+          showToast('الرجاء لصق كود المزامنة أولاً', 'error');
+          return;
+        }
+        try {
+          const decoded = decodeURIComponent(escape(atob(code)));
+          const parsed = JSON.parse(decoded);
+          state = normalizeState(parsed);
+          state.sync.pendingChangesCount = 0;
+          state.sync.lastSyncedAt = getTimeStampLabel();
+          pushSyncLog('استعادة البيانات عبر كود المزامنة');
+          saveToLocalStorage();
+          renderHeaderShipSelect();
+          renderActiveTab();
+          renderSyncModalBody();
+          updateHeaderSyncBadge();
+          showToast('تمت استعادة البيانات بنجاح', 'success');
+        } catch (e) {
+          showToast('كود المزامنة غير صالح', 'error');
+        }
+      }
+
+      /* ========================================================================
+         16. ONLINE / OFFLINE LISTENERS & GLOBAL EXPORTS
+         ======================================================================== */
+      window.addEventListener('online', function () {
+        updateHeaderSyncBadge();
+        showToast('عاد الاتصال بالإنترنت', 'success');
+        triggerAutoSyncIfReady();
+      });
+
+      window.addEventListener('offline', function () {
+        updateHeaderSyncBadge();
+        showToast('وضع عدم الاتصال — الحفظ محلي تلقائي', 'info');
+      });
+
+      window.addEventListener('focus', function () {
+        updateHeaderSyncBadge();
+        triggerAutoSyncIfReady();
+      });
+
+      setInterval(function () {
+        if (navigator.onLine && (state.sync.pendingChangesCount || 0) > 0) {
+          triggerAutoSyncIfReady();
+        }
+      }, 30000);
+
+      // Export handlers to window
+      window.selectBoat = selectBoat;
+      window.switchTab = switchTab;
+      window.openModal = openModal;
+      window.closeModal = closeModal;
+
+      window.changeHomeFleetPage = changeHomeFleetPage;
+      window.onMatrixVesselInput = onMatrixVesselInput;
+      window.onMatrixSailorInput = onMatrixSailorInput;
+
+      window.openSailorModal = openSailorModal;
+      window.switchSailorModalSubTab = switchSailorModalSubTab;
+      window.onSailorModalNameInput = onSailorModalNameInput;
+      window.onSailorModalProdInput = onSailorModalProdInput;
+      window.setSailorAdvPreset = setSailorAdvPreset;
+      window.applySailorModalDebtDelta = applySailorModalDebtDelta;
+      window.onSailorModalDirectDebt = onSailorModalDirectDebt;
+      window.onSailorModalAutoToggle = onSailorModalAutoToggle;
+      window.onSailorModalManualDeduct = onSailorModalManualDeduct;
+
+      window.onPurchaseSearch = onPurchaseSearch;
+      window.onPurchaseFilter = onPurchaseFilter;
+      window.changePurchasesPage = changePurchasesPage;
+      window.openPurchaseModal = openPurchaseModal;
+      window.savePurchaseForm = savePurchaseForm;
+      window.deletePurchase = deletePurchase;
+
+      window.onTodayDateChange = onTodayDateChange;
+      window.switchMgrSubTab = switchMgrSubTab;
+      window.toggleMgrDateScope = toggleMgrDateScope;
+      window.onMgrSelectGrade = onMgrSelectGrade;
+      window.onMgrPriceModeChange = onMgrPriceModeChange;
+      window.onMgrSelectExpCat = onMgrSelectExpCat;
+      window.changeMgrProdPage = changeMgrProdPage;
+      window.changeMgrExpPage = changeMgrExpPage;
+      window.addMgrProduction = addMgrProduction;
+      window.deleteMgrProduction = deleteMgrProduction;
+      window.addMgrExpense = addMgrExpense;
+      window.deleteMgrExpense = deleteMgrExpense;
+
+      window.onCurrencyChange = onCurrencyChange;
+      window.onSellPriceInput = onSellPriceInput;
+      window.applySellPricesToAll = applySellPricesToAll;
+
+      window.changeBoatsPage = changeBoatsPage;
+      window.switchShipModalSubTab = switchShipModalSubTab;
+      window.openShipModal = openShipModal;
+      window.submitShipForm = submitShipForm;
+      window.confirmDeleteEditingShip = confirmDeleteEditingShip;
+
+      window.promptSaveDayToHistory = promptSaveDayToHistory;
+      window.openHistoryModal = openHistoryModal;
+      window.changeHistoryPage = changeHistoryPage;
+      window.viewHistoryRecord = viewHistoryRecord;
+      window.deleteHistoryRecord = deleteHistoryRecord;
+      window.openCurrentSettlementPreview = openCurrentSettlementPreview;
+      window.switchReportSubTab = switchReportSubTab;
+      window.changeReportPurPage = changeReportPurPage;
+      window.copyReportSummary = copyReportSummary;
+
+      window.openSyncModal = openSyncModal;
+      window.switchSyncSubTab = switchSyncSubTab;
+      window.onSyncUrlInput = onSyncUrlInput;
+      window.onAutoSyncToggle = onAutoSyncToggle;
+      window.performCloudSync = performCloudSync;
+      window.exportBackupJSON = exportBackupJSON;
+      window.importBackupJSON = importBackupJSON;
+      window.copySyncCode = copySyncCode;
+      window.applyPastedSyncCode = applyPastedSyncCode;
+
+      /* ========================================================================
+         17. INIT
+         ======================================================================== */
+      window.addEventListener('DOMContentLoaded', function () {
+        renderHeaderShipSelect();
+        updateHeaderSyncBadge();
+        renderActiveTab();
+      });
+
+    })();
+  </script>
+</body>
+</html>
