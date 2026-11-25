@@ -4238,5 +4238,390 @@
 
     })();
   </script>
+<!-- === المساعد الصوتي بالذكاء الاصطناعي لأسطول الصيد === -->
+<script>
+(function () {
+  if (document.getElementById('fleet-ai-fab')) return;
 
+  const style = document.createElement('style');
+  style.textContent = `
+    #fleet-ai-fab{position:fixed;left:16px;bottom:18px;z-index:9998;width:54px;height:54px;border-radius:50%;border:none;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;font-size:24px;box-shadow:0 6px 18px rgba(37,99,235,.45);cursor:pointer;display:flex;align-items:center;justify-content:center}
+    #fleet-ai-fab:active{transform:scale(.94)}
+    #fleet-ai-overlay{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.72);display:none;align-items:flex-end;justify-content:center;font-family:inherit;direction:rtl}
+    #fleet-ai-overlay.open{display:flex}
+    #fleet-ai-box{width:100%;max-width:480px;max-height:84vh;background:#0f172a;color:#f8fafc;border-radius:18px 18px 0 0;border-top:1px solid #334155;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 30px rgba(0,0,0,.4)}
+    .fai-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#1e293b;border-bottom:1px solid #334155}
+    .fai-title{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px}
+    .fai-hbtns{display:flex;gap:8px}
+    .fai-hbtn{background:#334155;color:#f8fafc;border:none;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer}
+    .fai-hbtn.muted{opacity:.55}
+    .fai-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;border-bottom:1px solid #1e293b}
+    .fai-chip{white-space:nowrap;background:#1e293b;color:#cbd5e1;border:1px solid #334155;border-radius:999px;padding:5px 10px;font-size:12px;cursor:pointer}
+    .fai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:180px}
+    .fai-msg{max-width:88%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+    .fai-msg.user{align-self:flex-start;background:#2563eb;color:#fff;border-bottom-right-radius:4px}
+    .fai-msg.ai{align-self:flex-end;background:#1e293b;color:#f1f5f9;border:1px solid #334155;border-bottom-left-radius:4px}
+    .fai-card{align-self:stretch;background:#0b2538;border:1px solid #0ea5e9;border-radius:12px;padding:12px;font-size:13px}
+    .fai-card h4{margin:0 0 6px;color:#38bdf8;font-size:14px}
+    .fai-card-btns{display:flex;gap:8px;margin-top:10px}
+    .fai-btn-ok{flex:1;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:9px;font-weight:700;cursor:pointer}
+    .fai-btn-no{background:#475569;color:#fff;border:none;border-radius:8px;padding:9px 14px;cursor:pointer}
+    .fai-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#1e293b;border-top:1px solid #334155}
+    #fai-input{flex:1;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+    #fai-mic{width:44px;height:44px;border-radius:50%;border:none;background:#0ea5e9;color:#fff;font-size:20px;cursor:pointer;flex-shrink:0}
+    #fai-mic.rec{background:#ef4444;animation:faiPulse 1s infinite}
+    #fai-send{background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-weight:700;font-size:14px;cursor:pointer}
+    @keyframes faiPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+  `;
+  document.head.appendChild(style);
+
+  const fab = document.createElement('button');
+  fab.id = 'fleet-ai-fab';
+  fab.title = 'المساعد الصوتي';
+  fab.textContent = '🎙️';
+  document.body.appendChild(fab);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'fleet-ai-overlay';
+  overlay.innerHTML = `
+    <div id="fleet-ai-box">
+      <div class="fai-head">
+        <div class="fai-title">🤖 المساعد الصوتي للأسطول</div>
+        <div class="fai-hbtns">
+          <button id="fai-tts" class="fai-hbtn" title="تفعيل/إيقاف الصوت">🔊 الصوت</button>
+          <button id="fai-close" class="fai-hbtn">إغلاق</button>
+        </div>
+      </div>
+      <div class="fai-chips">
+        <button class="fai-chip" data-q="كم مجموع ديون البحارة في كل سفينة؟">مجموع الديون</button>
+        <button class="fai-chip" data-q="ما هي إجمالي مصاريف ومشتريات السفن؟">ملخص المصاريف</button>
+        <button class="fai-chip" data-q="سجّل سلفة 5000 للشيخ في البركة 1">مثال: سلفة</button>
+        <button class="fai-chip" data-q="أضف مصروف محروقات 20000 للبركة 2">مثال: مصروف</button>
+      </div>
+      <div class="fai-msgs" id="fai-msgs">
+        <div class="fai-msg ai">أهلاً بك! اضغط على الميكروفون 🎙️ وتحدّث للسؤال عن الحسابات أو لتسجيل سلفة أو إنتاج أو مصروف.</div>
+      </div>
+      <div class="fai-bar">
+        <button id="fai-mic" title="تحدث الآن">🎙️</button>
+        <input id="fai-input" type="text" placeholder="تحدث أو اكتب طلبك هنا...">
+        <button id="fai-send">إرسال</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  let ttsEnabled = true;
+  let recognition = null;
+  let isRecording = false;
+
+  const msgsEl = document.getElementById('fai-msgs');
+  const inputEl = document.getElementById('fai-input');
+  const micBtn = document.getElementById('fai-mic');
+  const sendBtn = document.getElementById('fai-send');
+  const ttsBtn = document.getElementById('fai-tts');
+
+  function findFleetStore() {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw || raw[0] !== '{') continue;
+        const obj = JSON.parse(raw);
+        if (obj && Array.isArray(obj.boats)) return { key, wrapper: false, root: obj, data: obj };
+        if (obj && obj.data && Array.isArray(obj.data.boats)) return { key, wrapper: true, root: obj, data: obj.data };
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  function speakText(text) {
+    if (!ttsEnabled || !('speechSynthesis' in window) || !text) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ar-SA';
+      const voices = window.speechSynthesis.getVoices();
+      const arVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ar'));
+      if (arVoice) u.voice = arVoice;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function addMsg(text, who) {
+    const div = document.createElement('div');
+    div.className = 'fai-msg ' + who;
+    div.textContent = text;
+    msgsEl.appendChild(div);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+    return div;
+  }
+
+  function buildSlimData(d) {
+    return {
+      currency: d.currency || 'أوقية',
+      activeBoatId: d.activeBoatId,
+      boats: (d.boats || []).map(b => ({
+        id: b.id, name: b.name, captain: b.captain, todayDate: b.todayDate,
+        pricing: b.pricing, boatProduction: b.boatProduction,
+        sailors: b.sailors, purchases: b.purchases,
+        managerProduction: b.managerProduction, managerExpenses: b.managerExpenses
+      })),
+      history: (d.history || []).slice(0, 10)
+    };
+  }
+
+  function parseAIResponse(rawText) {
+    const txt = (rawText || '').trim();
+    const match = txt.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        const obj = JSON.parse(match[0]);
+        if (obj && (obj.type === 'answer' || obj.type === 'action')) return obj;
+      } catch (e) {}
+    }
+    return { type: 'answer', reply: txt.replace(/[*#`]/g, '') };
+  }
+
+  function showConfirmCard(parsed) {
+    const card = document.createElement('div');
+    card.className = 'fai-card';
+    card.innerHTML = `
+      <h4>تأكيد العملية قبل الحفظ</h4>
+      <div>${parsed.summary || parsed.reply || ''}</div>
+      <div class="fai-card-btns">
+        <button class="fai-btn-ok">✅ تأكيد وحفظ</button>
+        <button class="fai-btn-no">إلغاء</button>
+      </div>
+    `;
+    msgsEl.appendChild(card);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+    card.querySelector('.fai-btn-no').onclick = () => {
+      card.remove();
+      addMsg('تم إلغاء العملية.', 'ai');
+    };
+    card.querySelector('.fai-btn-ok').onclick = async () => {
+      card.querySelector('.fai-btn-ok').disabled = true;
+      card.querySelector('.fai-btn-ok').textContent = 'جارٍ الحفظ...';
+      const ok = await applyFleetAction(parsed.action, parsed.summary);
+      if (ok) {
+        speakText('تم الحفظ بنجاح');
+        setTimeout(() => location.reload(), 500);
+      } else {
+        card.remove();
+        addMsg('تعذر تطبيق العملية، تأكد من اسم السفينة أو البحار.', 'ai');
+      }
+    };
+  }
+
+  async function applyFleetAction(act, summary) {
+    const store = findFleetStore();
+    if (!store || !act) return false;
+    const d = store.data;
+    const boat = d.boats.find(b => b.id === act.boatId)
+      || d.boats.find(b => b.name === act.boatName)
+      || d.boats.find(b => b.id === d.activeBoatId)
+      || d.boats[0];
+    if (!boat) return false;
+
+    const today = boat.todayDate || new Date().toISOString().slice(0, 10);
+    const grade = ['F', 'R', 'P', 'RR'].includes(act.grade) ? act.grade : 'F';
+
+    if (act.kind === 'sailor_debt') {
+      const s = boat.sailors.find(x => String(x.id) === String(act.sailorId))
+        || boat.sailors.find(x => act.sailorName && x.name.includes(act.sailorName));
+      if (!s) return false;
+      const amt = Number(act.amount) || 0;
+      if (act.op === 'set') s.debt = Math.max(0, amt);
+      else if (act.op === 'sub') s.debt = Math.max(0, (Number(s.debt) || 0) - amt);
+      else s.debt = (Number(s.debt) || 0) + amt;
+    } else if (act.kind === 'sailor_production') {
+      const s = boat.sailors.find(x => String(x.id) === String(act.sailorId))
+        || boat.sailors.find(x => act.sailorName && x.name.includes(act.sailorName));
+      if (!s) return false;
+      const kg = Number(act.kg) || 0;
+      s.production = s.production || { F: 0, R: 0, P: 0, RR: 0 };
+      s.production[grade] = act.op === 'set' ? kg : (Number(s.production[grade]) || 0) + kg;
+    } else if (act.kind === 'boat_production') {
+      const kg = Number(act.kg) || 0;
+      boat.boatProduction = boat.boatProduction || { F: 0, R: 0, P: 0, RR: 0 };
+      boat.boatProduction[grade] = act.op === 'set' ? kg : (Number(boat.boatProduction[grade]) || 0) + kg;
+    } else if (act.kind === 'boat_purchase') {
+      boat.purchases = boat.purchases || [];
+      boat.purchases.unshift({
+        id: 'pur-' + Date.now(),
+        date: today,
+        item: act.item || 'مصروف',
+        category: act.category || 'أخرى',
+        amount: Number(act.amount) || 0
+      });
+    } else if (act.kind === 'manager_production') {
+      boat.managerProduction = boat.managerProduction || [];
+      const unitPrice = (boat.pricing && boat.pricing[grade] && boat.pricing[grade].sellPrice) || 0;
+      boat.managerProduction.unshift({
+        id: 'mp-' + Date.now(),
+        date: today,
+        grade: grade,
+        kg: Number(act.kg) || 0,
+        unitPrice: unitPrice,
+        note: act.note || ''
+      });
+    } else if (act.kind === 'manager_expense') {
+      boat.managerExpenses = boat.managerExpenses || [];
+      boat.managerExpenses.unshift({
+        id: 'me-' + Date.now(),
+        date: today,
+        item: act.item || act.note || 'مصروف',
+        note: act.note || act.item || '',
+        category: act.category || 'أخرى',
+        amount: Number(act.amount) || 0
+      });
+    } else {
+      return false;
+    }
+
+    const now = new Date();
+    const stamp = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
+    if (d.sync) {
+      d.sync.logs = d.sync.logs || [];
+      d.sync.logs.unshift({ time: stamp, msg: 'إدخال صوتي: ' + (summary || act.kind) });
+      d.sync.logs = d.sync.logs.slice(0, 40);
+      d.sync.pendingChangesCount = (d.sync.pendingChangesCount || 0) + 1;
+    }
+
+    localStorage.setItem(store.key, JSON.stringify(store.root));
+
+    if (navigator.onLine && d.sync && d.sync.autoSync && d.sync.syncUrl) {
+      try {
+        await fetch(d.sync.syncUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ app: 'fishing-fleet-manager', syncedAt: now.toISOString(), data: d })
+        });
+        d.sync.lastSyncedAt = stamp;
+        d.sync.pendingChangesCount = 0;
+        localStorage.setItem(store.key, JSON.stringify(store.root));
+      } catch (e) {}
+    }
+    return true;
+  }
+
+  async function sendQuestion(text) {
+    const q = (text || '').trim();
+    if (!q) return;
+    inputEl.value = '';
+    addMsg(q, 'user');
+
+    if (!navigator.onLine) {
+      const m = 'المساعد الذكي يحتاج اتصالاً بالإنترنت.';
+      addMsg(m, 'ai');
+      speakText(m);
+      return;
+    }
+
+    const store = findFleetStore();
+    const syncUrl = store && store.data && store.data.sync && store.data.sync.syncUrl;
+    if (!store || !syncUrl) {
+      addMsg('لم يتم العثور على رابط المزامنة السحابية داخل إعدادات التطبيق.', 'ai');
+      return;
+    }
+
+    const waitMsg = addMsg('جارٍ الفهم والتحليل...', 'ai');
+    const structuredPrompt =
+      'أجب بصيغة JSON صالحة فقط بدون أي نص خارجها وبدون علامات markdown.\n' +
+      'إذا كان كلام المستخدم سؤالاً أو استفساراً عن البيانات:\n' +
+      '{"type":"answer","reply":"إجابة مختصرة ودقيقة بالعربية مناسبة للنطق الصوتي"}\n' +
+      'إذا كان كلام المستخدم طلباً لإضافة أو تعديل قيد (دين/سلفة بحار، تسديد دين، إنتاج بحار، إنتاج سفينة، مصروف/مشتريات سفينة، إنتاج مسير، مصروف مسير):\n' +
+      '{"type":"action","summary":"وصف واضح للعملية بالاسم والمبلغ والسفينة","reply":"سأقوم بـ ... اضغط تأكيد للحفظ","action":{"kind":"sailor_debt|sailor_production|boat_production|boat_purchase|manager_production|manager_expense","boatId":"معرّف السفينة من البيانات","boatName":"اسم السفينة","sailorId":0,"sailorName":"اسم البحار","op":"add|sub|set","grade":"F|R|P|RR","kg":0,"amount":0,"item":"وصف المصروف","category":"محروقات|معاش|صيانة|أخرى","note":""}}\n' +
+      'ملاحظات: إذا لم تُذكر السفينة فابحث عن البحار في السفن أو استخدم activeBoatId. الأصناف هي F وR وP وRR. العملة أوقية.\n' +
+      'طلب المستخدم: ' + q;
+
+    try {
+      const res = await fetch(syncUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'askAI',
+          prompt: structuredPrompt,
+          fleetData: buildSlimData(store.data)
+        })
+      });
+      const json = await res.json();
+      waitMsg.remove();
+      const parsed = parseAIResponse(json.reply || '');
+      addMsg(parsed.reply || parsed.summary || 'تمت المعالجة.', 'ai');
+      speakText(parsed.reply || parsed.summary || '');
+      if (parsed.type === 'action' && parsed.action) {
+        showConfirmCard(parsed);
+      }
+    } catch (err) {
+      waitMsg.textContent = 'تعذر الاتصال بالمساعد الذكي. تأكد من الإنترنت وحاول مجدداً.';
+    }
+  }
+
+  function startVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      addMsg('المتصفح لا يدعم التسجيل المباشر؛ يمكنك استخدام زر الميكروفون الموجود في لوحة مفاتيح الهاتف داخل مربع الكتابة.', 'ai');
+      return;
+    }
+    if (isRecording && recognition) {
+      recognition.stop();
+      return;
+    }
+    recognition = new SR();
+    recognition.lang = 'ar-SA';
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    let finalTxt = '';
+
+    recognition.onstart = () => {
+      isRecording = true;
+      micBtn.classList.add('rec');
+      inputEl.placeholder = 'تحدّث الآن...';
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    };
+    recognition.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) finalTxt += e.results[i][0].transcript;
+        else interim += e.results[i][0].transcript;
+      }
+      inputEl.value = (finalTxt || interim).trim();
+    };
+    recognition.onerror = () => {
+      isRecording = false;
+      micBtn.classList.remove('rec');
+      inputEl.placeholder = 'تحدث أو اكتب طلبك هنا...';
+    };
+    recognition.onend = () => {
+      isRecording = false;
+      micBtn.classList.remove('rec');
+      inputEl.placeholder = 'تحدث أو اكتب طلبك هنا...';
+      if (inputEl.value.trim()) sendQuestion(inputEl.value);
+    };
+    recognition.start();
+  }
+
+  fab.onclick = () => overlay.classList.add('open');
+  document.getElementById('fai-close').onclick = () => {
+    overlay.classList.remove('open');
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  };
+  overlay.onclick = (e) => { if (e.target === overlay) document.getElementById('fai-close').click(); };
+  ttsBtn.onclick = () => {
+    ttsEnabled = !ttsEnabled;
+    ttsBtn.classList.toggle('muted', !ttsEnabled);
+    ttsBtn.textContent = ttsEnabled ? '🔊 الصوت' : '🔇 صامت';
+    if (!ttsEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+  };
+  micBtn.onclick = startVoice;
+  sendBtn.onclick = () => sendQuestion(inputEl.value);
+  inputEl.onkeydown = (e) => { if (e.key === 'Enter') sendQuestion(inputEl.value); };
+  overlay.querySelectorAll('.fai-chip').forEach(btn => {
+    btn.onclick = () => sendQuestion(btn.dataset.q);
+  });
+})();
+  </script>
+  
 </body></html>
