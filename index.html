@@ -4281,69 +4281,79 @@ fab.title = 'المساعد الصوتي الذكي';
 fab.innerHTML = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 3v4"/><path d="M21 5h-4"/><path d="M5 17v3"/><path d="M6.5 18.5h-3"/></svg><span style="font-size:13px;font-weight:800;letter-spacing:0.5px;color:#ffffff;">AI</span>';
 fab.style.cssText = 'position:fixed!important;bottom:124px!important;left:16px!important;width:auto!important;height:44px!important;padding:0 14px!important;border-radius:999px!important;border:1px solid rgba(255,255,255,0.45)!important;background:linear-gradient(135deg,rgba(15,41,66,0.46),rgba(2,132,199,0.32))!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;box-shadow:0 6px 18px rgba(15,41,66,0.18),inset 0 1px 1px rgba(255,255,255,0.45)!important;z-index:9998;cursor:pointer;';
 document.body.appendChild(fab);
-  const printStyle = document.createElement('style');
+const printStyle = document.createElement('style');
 printStyle.textContent = '@page{size:A4 portrait;margin:6mm}#fleet-invoice-modal{display:none;position:fixed;inset:0;z-index:99999;background:#cbd5e1;overflow-y:auto;padding:10px 8px 40px;direction:rtl;font-family:system-ui,-apple-system,sans-serif}#fleet-invoice-modal.open{display:block}#fleet-inv-toolbar{max-width:794px;margin:0 auto 10px;background:#062c43;color:#fff;padding:10px 12px;border-radius:12px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.2)}#fleet-print-sheet{max-width:794px;margin:0 auto;background:#fff;color:#062c43;box-shadow:0 10px 30px rgba(6,44,67,.18);overflow:hidden}.fi-sec-title{font-size:13px;font-weight:900;color:#062c43;margin:10px 0 4px;padding-right:8px;border-right:4px solid #0d9488}.fi-tbl{width:100%;border-collapse:separate;border-spacing:0 4px;margin-bottom:10px;font-size:11.5px}.fi-tbl th{background:#0d9488!important;color:#fff!important;font-weight:800;padding:7px 6px;text-align:center}.fi-tbl th:first-child{border-radius:0 7px 7px 0;text-align:right;padding-right:10px}.fi-tbl th:last-child{border-radius:7px 0 0 7px}.fi-tbl td{background:#ccfbf1!important;color:#062c43!important;font-weight:700;padding:6px;text-align:center;border-left:2px solid #fff}.fi-tbl td:first-child{border-radius:0 7px 7px 0;text-align:right;padding-right:10px;font-weight:800}.fi-tbl td:last-child{border-radius:7px 0 0 7px;border-left:none}.fi-tbl tr:nth-child(even) td{background:#e6fffa!important}.fi-tbl tr.fi-sum td{background:#062c43!important;color:#fff!important;font-weight:900}@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body>*:not(#fleet-invoice-modal){display:none!important}#fleet-inv-toolbar{display:none!important}#fleet-invoice-modal{position:static!important;inset:auto!important;background:#fff!important;padding:0!important;overflow:visible!important;display:block!important}#fleet-print-sheet{box-shadow:none!important;margin:0!important;width:100%!important;max-width:100%!important}}';
 document.head.appendChild(printStyle);
 const invModal = document.createElement('div');
 invModal.id = 'fleet-invoice-modal';
 document.body.appendChild(invModal);
-  function getFleetInvoiceData() {
+    function getAllFleetShipsData() {
   const captains = { 'البركة 1': 'أحمد همد', 'البركة 2': 'عمر', 'البركة 3': 'عبد الله', 'البركة 4': 'احمد سالك' };
   const norm = s => String(s || '').replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]).replace(/\s+/g, ' ').trim();
   const fmt = n => (Number(String(n || 0).replace(/,/g, '')) || 0).toLocaleString('en-US');
   const num = v => Number(String(v || 0).replace(/[^\d.-]/g, '')) || 0;
-  let ship = '';
-  const cand = Array.from(document.querySelectorAll('#root button,#root select,#root [aria-selected="true"],#root .active,#root h1,#root h2,#root h3,#root span,#root div'));
-  const activeEl = cand.find(el => el.offsetParent && (el.tagName === 'SELECT' ? /^البركة\s*[1-4]$/.test(norm(el.value)) : (el.children.length === 0 && /^البركة\s*[1-4]$/.test(norm(el.textContent)))));
-  if (activeEl) ship = norm(activeEl.tagName === 'SELECT' ? activeEl.value : activeEl.textContent);
-  let foundShip = null, allShips = [];
-  const scanObj = (node, d) => {
-    if (!node || typeof node !== 'object' || d > 5) return;
-    if (Array.isArray(node)) { node.forEach(it => { if (it && typeof it === 'object') { const nm = norm(it.name || it.title || it.shipName || ''); if (/^البركة\s*[1-4]$/.test(nm)) allShips.push({ name: nm, obj: it }); scanObj(it, d + 1); } }); return; }
-    if (!ship) { const act = norm(node.activeShip || node.selectedShip || node.currentShip || ''); if (/^البركة\s*[1-4]$/.test(act)) ship = act; }
-    Object.keys(node).forEach(k => { const nk = norm(k); if (/^البركة\s*[1-4]$/.test(nk) && node[k] && typeof node[k] === 'object') allShips.push({ name: nk, obj: node[k] }); scanObj(node[k], d + 1); });
-  };
-  try { Object.keys(localStorage).forEach(k => { const raw = localStorage.getItem(k); if (raw && (raw[0] === '{' || raw[0] === '[')) scanObj(JSON.parse(raw), 0); }); } catch (e) {}
-  if (!ship) ship = allShips[0] ? allShips[0].name : 'البركة 1';
-  const matched = allShips.find(s => s.name === ship);
-  if (matched) foundShip = matched.obj;
-  let sailors = [], purchases = [], summary = { prodKg: 0, sales: 0, sailorsShare: 0, purchasesTotal: 0, shipNet: 0 };
-    if (foundShip) {
-    const pS = foundShip.sailorPrices || foundShip.prices || {}, pSale = foundShip.salePrices || pS || {};
-    const rawCrew = foundShip.sailors || foundShip.crew || foundShip.workers || foundShip.members || [];
-    if (Array.isArray(rawCrew)) {
-      sailors = rawCrew.map((m, i) => {
-        const g = m.grades || m.catch || m.prod || m;
-        const f = num(g.F ?? m.f), r = num(g.R ?? m.r), p = num(g.P ?? m.p), rr = num(g.RR ?? m.rr);
-        const kg = m.kg != null ? num(m.kg) : (m.totalKg != null ? num(m.totalKg) : (f + r + p + rr));
-        const share = m.share != null ? num(m.share) : (m.quota != null ? num(m.quota) : (m.production != null ? num(m.production) : (f * num(pS.F) + r * num(pS.R) + p * num(pS.P) + rr * num(pS.RR))));
-        const discount = num(m.discount ?? m.debt ?? m.advance ?? m.loan ?? m.debts);
-        return { name: m.name || m.title || ('بحار ' + (i + 1)), kg, share, discount, net: m.net != null ? num(m.net) : (share - discount) };
-      });
+  const sumVal = v => Array.isArray(v) ? v.reduce((a, x) => a + num(typeof x === 'object' ? (x.amount ?? x.value ?? x.cost) : x), 0) : num(v);
+  let activeName = '';
+  document.querySelectorAll('#root select').forEach(sel => {
+    if (!sel.offsetParent) return;
+    const txt = norm(sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : sel.value);
+    if (/البركة\s*[1-4]/.test(txt)) activeName = txt.match(/البركة\s*[1-4]/)[0];
+  });
+  let storeData = null;
+  if (typeof findFleetStore === 'function') { const st = findFleetStore(); if (st && st.data) storeData = st.data; }
+  if (!storeData) {
+    for (let i = 0; i < localStorage.length; i++) {
+      try {
+        const obj = JSON.parse(localStorage.getItem(localStorage.key(i)));
+        if (obj && Array.isArray(obj.boats)) { storeData = obj; break; }
+        if (obj && obj.data && Array.isArray(obj.data.boats)) { storeData = obj.data; break; }
+      } catch (e) {}
     }
-    const sp = foundShip.shipProd || foundShip.shipProduction || foundShip.boatCatch || {};
-    const sKg = ['F', 'R', 'P', 'RR'].reduce((a, g) => a + num(sp[g]), 0);
-    const sSal = ['F', 'R', 'P', 'RR'].reduce((a, g) => a + num(sp[g]) * num(pSale[g] || pS[g]), 0);
-    const cSal = Array.isArray(rawCrew) ? rawCrew.reduce((a, m) => { const g = m.grades || m.catch || m.prod || m; return a + ['F', 'R', 'P', 'RR'].reduce((s, gr) => s + num(g[gr] ?? m[gr.toLowerCase()]) * num(pSale[gr] || pS[gr]), 0); }, 0) : 0;
-    const rawExp = foundShip.purchases || foundShip.expenses || foundShip.costs || foundShip.items || [];
-    if (Array.isArray(rawExp)) purchases = rawExp.map(ex => ({ item: ex.item || ex.name || ex.label || ex.title || ex.desc || ex.note || 'مصروف', category: ex.category || ex.type || ex.tasnif || 'مشتريات', amount: num(ex.amount ?? ex.cost ?? ex.price ?? ex.value) }));
-    summary.prodKg = num(foundShip.totalKg) || (sailors.reduce((a, b) => a + b.kg, 0) + sKg);
-    summary.sales = num(foundShip.totalSales) || (cSal + sSal);
-    summary.sailorsShare = sailors.reduce((a, b) => a + b.share, 0);
-    summary.purchasesTotal = purchases.reduce((a, b) => a + b.amount, 0);
-    summary.shipNet = foundShip.shipNet != null ? num(foundShip.shipNet) : (summary.sales - summary.sailorsShare - summary.purchasesTotal);
   }
-  const rt = document.getElementById('root') ? document.getElementById('root').innerText : '';
-  const m1 = rt.match(/الإنتاج\s*[:：]\s*([\d,]+)/); if (m1) summary.prodKg = num(m1[1]);
-  const m2 = rt.match(/المبيعات\s*[:：]\s*([\d,]+)/); if (m2) summary.sales = num(m2[1]);
-  const m3 = rt.match(/حصص البحارة\s*[:：]\s*([\d,]+)/); if (m3) summary.sailorsShare = num(m3[1]);
-  const m4 = rt.match(/المشتريات\s*[:：]\s*([\d,]+)/); if (m4) summary.purchasesTotal = num(m4[1]);
-  const m5 = rt.match(/صافي السفينة\s*[:：]\s*(-?[\d,]+)/); if (m5) summary.shipNet = num(m5[1]);
-  return { ship, captain: (foundShip && foundShip.captain) || captains[ship] || '', sailors, purchases, summary, fmt };
+  const rawBoats = storeData && storeData.boats ? (Array.isArray(storeData.boats) ? storeData.boats : Object.values(storeData.boats)) : [];
+  if (!activeName && storeData) {
+    const ab = rawBoats.find(b => b && (b.id === storeData.activeBoatId || b.id === storeData.selectedBoatId || b.name === storeData.activeBoat));
+    if (ab && ab.name) activeName = norm(ab.name);
   }
-  function renderFleetInvoice(data, selIdx) {
+        const buildShip = (b, idx) => {
+    const name = norm((b && (b.name || b.title)) || ('البركة ' + (idx + 1)));
+    const pS = (b && (b.sailorPrices || b.prices)) || (storeData && (storeData.sailorPrices || storeData.prices)) || {};
+    const pSale = (b && b.salePrices) || (storeData && storeData.salePrices) || pS || {};
+    const gp = (obj, k) => num(obj ? (obj[k] ?? obj[k.toLowerCase()]) : 0);
+    const rawCrew = (b && (b.sailors || b.crew || b.workers || b.members)) || [];
+    const sailors = Array.isArray(rawCrew) ? rawCrew.map((m, i) => {
+      const g = m.catch || m.grades || (typeof m.prod === 'object' ? m.prod : null) || (typeof m.production === 'object' ? m.production : null) || m;
+      const f = gp(g, 'F'), r = gp(g, 'R'), p = gp(g, 'P'), rr = gp(g, 'RR');
+      const kg = num(m.kg) || (f + r + p + rr);
+      const calcShare = f * gp(pS, 'F') + r * gp(pS, 'R') + p * gp(pS, 'P') + rr * gp(pS, 'RR');
+      const share = num(m.share ?? m.earned) || calcShare;
+      const discount = sumVal(m.debt ?? m.debts ?? m.discount ?? m.advance ?? m.advances ?? m.loan);
+      const net = m.net != null ? num(m.net) : Math.max(0, share - discount);
+      const saleVal = f * gp(pSale, 'F') + r * gp(pSale, 'R') + p * gp(pSale, 'P') + rr * gp(pSale, 'RR');
+      return { name: m.name || m.title || ('بحار ' + (i + 1)), kg, share, discount, net, saleVal };
+    }) : [];
+    const sp = (b && (b.shipProd || b.shipProduction || b.boatProd || b.boatCatch)) || {};
+    const sKg = ['F', 'R', 'P', 'RR'].reduce((a, k) => a + gp(sp, k), 0);
+    const sSales = ['F', 'R', 'P', 'RR'].reduce((a, k) => a + gp(sp, k) * gp(pSale, k), 0);
+    const rawExp = (b && (b.purchases || b.expenses || b.costs || b.items)) || [];
+    const purchases = Array.isArray(rawExp) ? rawExp.map(ex => ({ item: ex.item || ex.name || ex.label || ex.title || ex.desc || ex.note || 'مصروف', category: ex.category || ex.type || ex.tasnif || 'مشتريات', amount: num(ex.amount ?? ex.cost ?? ex.price ?? ex.value) })) : [];
+    if (b && num(b.fuel) > 0 && !purchases.some(x => /محروقات/.test(x.item))) purchases.push({ item: 'محروقات', category: 'محروقات', amount: num(b.fuel) });
+    if (b && num(b.provisions || b.maash) > 0 && !purchases.some(x => /معاش/.test(x.item))) purchases.push({ item: 'المعاش', category: 'معاش', amount: num(b.provisions || b.maash) });
+    const prodKg = sailors.reduce((a, x) => a + x.kg, 0) + sKg;
+    const sales = sailors.reduce((a, x) => a + x.saleVal, 0) + sSales;
+    const sailorsShare = sailors.reduce((a, x) => a + x.share, 0);
+    const purchasesTotal = purchases.reduce((a, x) => a + x.amount, 0);
+    return { name, captain: (b && b.captain) || captains[name] || '', sailors, purchases, summary: { prodKg, sales, sailorsShare, purchasesTotal, shipNet: sales - sailorsShare - purchasesTotal } };
+  };
+  const ships = rawBoats.length ? rawBoats.map((b, i) => buildShip(b, i)) : ['البركة 1', 'البركة 2', 'البركة 3', 'البركة 4'].map((nm, i) => buildShip({ name: nm }, i));
+  let activeIdx = ships.findIndex(s => s.name === activeName);
+  if (activeIdx < 0) activeIdx = 0;
+  return { ships, activeIdx, fmt };
+    }
+  function renderFleetInvoice(allData, shipIdx, selIdx) {
+  const data = allData.ships[shipIdx] || allData.ships[0];
   const d = new Date(), dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  const fmt = data.fmt, isW = selIdx !== 'ALL' && data.sailors[selIdx], w = isW ? data.sailors[selIdx] : null;
+  const fmt = allData.fmt, isW = selIdx !== 'ALL' && data.sailors[selIdx], w = isW ? data.sailors[selIdx] : null;
   let tablesHtml = '';
   if (isW) {
     tablesHtml = '<div class="fi-sec-title">تصفية البحار الفردية</div><table class="fi-tbl"><thead><tr><th>البحار</th><th>كغ</th><th>الحصة</th><th>الخصم</th><th>الصافي</th></tr></thead><tbody><tr><td contenteditable="true">' + w.name + '</td><td contenteditable="true">' + fmt(w.kg) + '</td><td contenteditable="true">' + fmt(w.share) + '</td><td contenteditable="true">' + fmt(w.discount) + '</td><td contenteditable="true">' + fmt(w.net) + '</td></tr></tbody></table>';
@@ -4353,14 +4363,16 @@ document.body.appendChild(invModal);
     const tPur = data.purchases.reduce((a, b) => a + b.amount, 0);
     const pRows = data.purchases.length ? data.purchases.map(p => '<tr><td contenteditable="true">' + p.item + '</td><td contenteditable="true">' + p.category + '</td><td contenteditable="true">' + fmt(p.amount) + '</td></tr>').join('') + '<tr class="fi-sum"><td>المجموع</td><td>-</td><td>' + fmt(tPur) + '</td></tr>' : '<tr><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">0</td></tr>';
     tablesHtml = '<div class="fi-sec-title">تصفية البحارة</div><table class="fi-tbl"><thead><tr><th>البحار</th><th>كغ</th><th>الحصة</th><th>الخصم</th><th>الصافي</th></tr></thead><tbody>' + sRows + '</tbody></table><div class="fi-sec-title">المشتريات</div><table class="fi-tbl"><thead><tr><th>البيان</th><th>التصنيف</th><th>المبلغ</th></tr></thead><tbody>' + pRows + '</tbody></table>';
-                                                                                 }
-        const sumStrip = '<div style="background:#f0fdfa!important;border:1.5px solid #0d9488;border-radius:8px;padding:7px 10px;margin-bottom:10px;text-align:center;font-size:11.5px;font-weight:800;color:#062c43;">الإنتاج: <span contenteditable="true">' + fmt(data.summary.prodKg) + '</span> كغ | المبيعات: <span contenteditable="true">' + fmt(data.summary.sales) + '</span> أوقية | حصص البحارة: <span contenteditable="true">' + fmt(data.summary.sailorsShare) + '</span> | المشتريات: <span contenteditable="true">' + fmt(data.summary.purchasesTotal) + '</span> | صافي السفينة: <span dir="ltr" contenteditable="true" style="color:#0d9488;font-weight:900;">' + fmt(data.summary.shipNet) + '</span> أوقية</div>';
-  const opts = '<option value="ALL"' + (!isW ? ' selected' : '') + '>كشف السفينة الكامل (' + data.ship + ')</option>' + data.sailors.map((wk, idx) => '<option value="' + idx + '"' + (String(selIdx) === String(idx) ? ' selected' : '') + '>وضعية العامل: ' + wk.name + '</option>').join('');
-  const infoL = isW ? '<div><strong>اسم العامل:</strong> <span contenteditable="true" style="color:#0d9488;font-weight:900;">' + w.name + '</span></div><div><strong>السفينة:</strong> <span contenteditable="true">' + data.ship + '</span></div><div><strong>الربان:</strong> <span contenteditable="true">' + (data.captain || '........') + '</span></div>' : '<div><strong>اسم السفينة:</strong> <span contenteditable="true" style="color:#0d9488;font-weight:900;font-size:14px;">' + data.ship + '</span></div><div><strong>الربان:</strong> <span contenteditable="true">' + (data.captain || '........') + '</span></div><div><strong>الرحلة رقم:</strong> <span contenteditable="true">........</span></div>';
-  const invTop = '<div id="fleet-inv-toolbar"><select id="fi-worker-sel" style="padding:7px 10px;border-radius:8px;border:1px solid #0d9488;background:#fff;color:#062c43;font-weight:800;font-size:12px;max-width:205px;">' + opts + '</select><div style="display:flex;gap:6px;"><button id="fi-do-print" style="background:#0d9488;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;">طباعة / PDF</button><button id="fi-close" style="background:#ef4444;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;">إغلاق</button></div></div><div id="fleet-print-sheet"><div style="position:relative;height:26px;background:#062c43!important;"><div style="position:absolute;top:0;left:0;width:160px;height:26px;background:#0d9488!important;clip-path:polygon(0 0,100% 0,78% 100%,0 100%);"></div></div><div style="padding:14px 20px 10px;"><div style="text-align:center;margin-bottom:10px;"><svg width="48" height="48" viewBox="0 0 64 64" style="margin:0 auto 3px;display:block;"><rect x="14" y="14" width="36" height="36" fill="none" stroke="#0d9488" stroke-width="3"/><rect x="14" y="14" width="36" height="36" transform="rotate(45 32 32)" fill="none" stroke="#062c43" stroke-width="3"/><circle cx="32" cy="32" r="7" fill="#0d9488"/></svg><div style="font-size:19px;font-weight:900;color:#062c43;">أسطول البركة للصيد التقليدي</div><div style="font-size:11px;font-weight:800;color:#0d9488;">' + (isW ? 'كشف وضعية عامل / بحار' : 'كشف تصفية سفينة: ' + data.ship + ' (' + dateStr + ') - الربان: ' + (data.captain || '')) + '</div></div><div style="display:flex;justify-content:space-between;gap:14px;background:#f0fdfa!important;border-right:4px solid #0d9488;border-left:4px solid #062c43;border-radius:10px;padding:8px 14px;margin-bottom:8px;font-size:12px;"><div style="line-height:1.8;">' + infoL + '</div><div style="line-height:1.8;text-align:left;"><div style="font-size:15px;font-weight:900;color:#062c43;">' + (isW ? 'كشف فردي' : 'كشف تصفية') + '</div><div><strong>التاريخ:</strong> ' + dateStr + '</div><div><strong>الميناء:</strong> <span contenteditable="true">انواذيبو</span></div></div></div><div style="height:4px;background:linear-gradient(90deg,#062c43,#0d9488);border-radius:4px;margin-bottom:10px;"></div>';
+  }
+      const sumStrip = '<div style="background:#f0fdfa!important;border:1.5px solid #0d9488;border-radius:8px;padding:7px 10px;margin-bottom:10px;text-align:center;font-size:11.5px;font-weight:800;color:#062c43;">الإنتاج: <span contenteditable="true">' + fmt(data.summary.prodKg) + '</span> كغ | المبيعات: <span contenteditable="true">' + fmt(data.summary.sales) + '</span> أوقية | حصص البحارة: <span contenteditable="true">' + fmt(data.summary.sailorsShare) + '</span> | المشتريات: <span contenteditable="true">' + fmt(data.summary.purchasesTotal) + '</span> | صافي السفينة: <span dir="ltr" contenteditable="true" style="color:#0d9488;font-weight:900;">' + fmt(data.summary.shipNet) + '</span> أوقية</div>';
+  const shipOpts = allData.ships.map((sh, i) => '<option value="' + i + '"' + (Number(shipIdx) === i ? ' selected' : '') + '>' + sh.name + '</option>').join('');
+  const workOpts = '<option value="ALL"' + (!isW ? ' selected' : '') + '>كشف السفينة الكامل</option>' + data.sailors.map((wk, idx) => '<option value="' + idx + '"' + (String(selIdx) === String(idx) ? ' selected' : '') + '>العامل: ' + wk.name + '</option>').join('');
+  const infoL = isW ? '<div><strong>اسم العامل:</strong> <span contenteditable="true" style="color:#0d9488;font-weight:900;">' + w.name + '</span></div><div><strong>السفينة:</strong> <span contenteditable="true">' + data.name + '</span></div><div><strong>الربان:</strong> <span contenteditable="true">' + (data.captain || '........') + '</span></div>' : '<div><strong>اسم السفينة:</strong> <span contenteditable="true" style="color:#0d9488;font-weight:900;font-size:14px;">' + data.name + '</span></div><div><strong>الربان:</strong> <span contenteditable="true">' + (data.captain || '........') + '</span></div><div><strong>الرحلة رقم:</strong> <span contenteditable="true">........</span></div>';
+  const invTop = '<div id="fleet-inv-toolbar"><div style="display:flex;gap:6px;flex-wrap:wrap;"><select id="fi-ship-sel" style="padding:7px 8px;border-radius:8px;border:1px solid #0d9488;background:#fff;color:#062c43;font-weight:900;font-size:12px;">' + shipOpts + '</select><select id="fi-worker-sel" style="padding:7px 8px;border-radius:8px;border:1px solid #0d9488;background:#fff;color:#062c43;font-weight:800;font-size:12px;max-width:165px;">' + workOpts + '</select></div><div style="display:flex;gap:6px;"><button id="fi-do-print" style="background:#0d9488;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;">طباعة / PDF</button><button id="fi-close" style="background:#ef4444;color:#fff;border:none;padding:7px 10px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;">إغلاق</button></div></div><div id="fleet-print-sheet"><div style="position:relative;height:26px;background:#062c43!important;"><div style="position:absolute;top:0;left:0;width:160px;height:26px;background:#0d9488!important;clip-path:polygon(0 0,100% 0,78% 100%,0 100%);"></div></div><div style="padding:14px 20px 10px;"><div style="text-align:center;margin-bottom:10px;"><svg width="48" height="48" viewBox="0 0 64 64" style="margin:0 auto 3px;display:block;"><rect x="14" y="14" width="36" height="36" fill="none" stroke="#0d9488" stroke-width="3"/><rect x="14" y="14" width="36" height="36" transform="rotate(45 32 32)" fill="none" stroke="#062c43" stroke-width="3"/><circle cx="32" cy="32" r="7" fill="#0d9488"/></svg><div style="font-size:19px;font-weight:900;color:#062c43;">أسطول البركة للصيد التقليدي</div><div style="font-size:11px;font-weight:800;color:#0d9488;">' + (isW ? 'كشف وضعية عامل / بحار' : 'كشف تصفية سفينة: ' + data.name + ' (' + dateStr + ') - الربان: ' + (data.captain || '')) + '</div></div><div style="display:flex;justify-content:space-between;gap:14px;background:#f0fdfa!important;border-right:4px solid #0d9488;border-left:4px solid #062c43;border-radius:10px;padding:8px 14px;margin-bottom:8px;font-size:12px;"><div style="line-height:1.8;">' + infoL + '</div><div style="line-height:1.8;text-align:left;"><div style="font-size:15px;font-weight:900;color:#062c43;">' + (isW ? 'كشف فردي' : 'كشف تصفية') + '</div><div><strong>التاريخ:</strong> ' + dateStr + '</div><div><strong>الميناء:</strong> <span contenteditable="true">انواذيبو</span></div></div></div><div style="height:4px;background:linear-gradient(90deg,#062c43,#0d9488);border-radius:4px;margin-bottom:10px;"></div>';
       const invBot = '<div style="display:flex;justify-content:space-between;padding:18px 16px 8px;"><div style="text-align:center;min-width:140px;"><div style="border-bottom:1.5px solid #062c43;height:28px;margin-bottom:4px;"></div><div style="font-size:13px;font-weight:900;color:#062c43;">توقيع المسير</div></div><div style="text-align:center;min-width:140px;"><div style="border-bottom:1.5px solid #0d9488;height:28px;margin-bottom:4px;"></div><div style="font-size:13px;font-weight:900;color:#0d9488;">' + (isW ? 'توقيع العامل' : 'توقيع الربان') + '</div></div></div><div style="display:flex;justify-content:center;gap:24px;padding:6px 0 2px;border-top:1px solid #ccfbf1;font-size:12px;font-weight:900;color:#062c43;"><span>☎ الهاتف: <span dir="ltr" contenteditable="true">47108169</span></span><span>⌖ العنوان: <span contenteditable="true">انواذيبو - موريتانيا</span></span></div></div><div style="position:relative;height:22px;background:#062c43!important;"><div style="position:absolute;bottom:0;right:0;width:160px;height:22px;background:#0d9488!important;clip-path:polygon(22% 0,100% 0,100% 100%,0 100%);"></div></div></div>';
   invModal.innerHTML = invTop + (isW ? '' : sumStrip) + tablesHtml + invBot;
-  document.getElementById('fi-worker-sel').onchange = e => renderFleetInvoice(data, e.target.value);
+  document.getElementById('fi-ship-sel').onchange = e => renderFleetInvoice(allData, Number(e.target.value), 'ALL');
+  document.getElementById('fi-worker-sel').onchange = e => renderFleetInvoice(allData, shipIdx, e.target.value);
   document.getElementById('fi-close').onclick = () => invModal.classList.remove('open');
   document.getElementById('fi-do-print').onclick = () => window.print();
 }
@@ -4368,7 +4380,7 @@ const printBtn = document.createElement('button');
 printBtn.id = 'fleet-print-fab';
 printBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span style="font-size:13px;font-weight:800;color:#ffffff;">طباعة</span>';
 printBtn.style.cssText = 'position:fixed!important;bottom:124px!important;right:16px!important;width:auto!important;height:44px!important;padding:0 14px!important;border-radius:999px!important;border:1px solid rgba(255,255,255,0.45)!important;background:linear-gradient(135deg,rgba(15,41,66,0.46),rgba(2,132,199,0.32))!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;box-shadow:0 6px 18px rgba(15,41,66,0.18),inset 0 1px 1px rgba(255,255,255,0.45)!important;z-index:9998;cursor:pointer;';
-printBtn.onclick = () => { renderFleetInvoice(getFleetInvoiceData(), 'ALL'); invModal.classList.add('open'); };
+printBtn.onclick = () => { const all = getAllFleetShipsData(); renderFleetInvoice(all, all.activeIdx, 'ALL'); invModal.classList.add('open'); };
 document.body.appendChild(printBtn);
   
   const overlay = document.createElement('div');
