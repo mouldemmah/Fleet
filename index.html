@@ -4282,7 +4282,7 @@ fab.innerHTML = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" str
 fab.style.cssText = 'position:fixed!important;bottom:124px!important;left:16px!important;width:auto!important;height:44px!important;padding:0 14px!important;border-radius:999px!important;border:1px solid rgba(255,255,255,0.45)!important;background:linear-gradient(135deg,rgba(15,41,66,0.46),rgba(2,132,199,0.32))!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;box-shadow:0 6px 18px rgba(15,41,66,0.18),inset 0 1px 1px rgba(255,255,255,0.45)!important;z-index:9998;cursor:pointer;';
 document.body.appendChild(fab);
 const printStyle = document.createElement('style');
-printStyle.textContent = '@page{size:A4 portrait;margin:6mm}#fleet-invoice-modal{display:none;position:fixed;inset:0;z-index:99999;background:#cbd5e1;overflow-y:auto;padding:10px 8px 40px;direction:rtl;font-family:system-ui,-apple-system,sans-serif}#fleet-invoice-modal.open{display:block}#fleet-inv-toolbar{max-width:794px;margin:0 auto 10px;background:#062c43;color:#fff;padding:10px 12px;border-radius:12px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.2)}#fleet-print-sheet{max-width:794px;margin:0 auto;background:#fff;color:#062c43;box-shadow:0 10px 30px rgba(6,44,67,.18);overflow:hidden}.fi-tbl{width:100%;border-collapse:separate;border-spacing:0 5px;margin-bottom:14px;font-size:12px}.fi-tbl th{background:#0d9488!important;color:#fff!important;font-weight:800;padding:8px 6px;text-align:center}.fi-tbl th:first-child{border-radius:0 8px 8px 0}.fi-tbl th:last-child{border-radius:8px 0 0 8px}.fi-tbl td{background:#ccfbf1!important;color:#062c43!important;font-weight:700;padding:7px 6px;text-align:center;border-left:2px solid #fff}.fi-tbl tr:nth-child(even) td{background:#e6fffa!important}.fi-tbl td:first-child{border-radius:0 8px 8px 0}.fi-tbl td:last-child{border-radius:8px 0 0 8px;border-left:none}@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body>*:not(#fleet-invoice-modal){display:none!important}#fleet-inv-toolbar{display:none!important}#fleet-invoice-modal{position:static!important;inset:auto!important;background:#fff!important;padding:0!important;overflow:visible!important;display:block!important}#fleet-print-sheet{box-shadow:none!important;margin:0!important;width:100%!important;max-width:100%!important}}';
+printStyle.textContent = '@page{size:A4 portrait;margin:6mm}#fleet-invoice-modal{display:none;position:fixed;inset:0;z-index:99999;background:#cbd5e1;overflow-y:auto;padding:10px 8px 40px;direction:rtl;font-family:system-ui,-apple-system,sans-serif}#fleet-invoice-modal.open{display:block}#fleet-inv-toolbar{max-width:794px;margin:0 auto 10px;background:#062c43;color:#fff;padding:10px 12px;border-radius:12px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.2)}#fleet-print-sheet{max-width:794px;margin:0 auto;background:#fff;color:#062c43;box-shadow:0 10px 30px rgba(6,44,67,.18);overflow:hidden}.fi-tbl{width:100%;border-collapse:separate;border-spacing:0 4px;margin-bottom:12px;font-size:11.5px}.fi-tbl th{background:#0d9488!important;color:#fff!important;font-weight:800;padding:7px 5px;text-align:center}.fi-tbl th:first-child{border-radius:0 7px 7px 0}.fi-tbl th:last-child{border-radius:7px 0 0 7px}.fi-tbl td{background:#ccfbf1!important;color:#062c43!important;font-weight:700;padding:6px 5px;text-align:center;border-left:2px solid #fff}.fi-tbl tr:nth-child(even) td{background:#e6fffa!important}.fi-tbl tr.fi-sum td{background:#062c43!important;color:#fff!important;font-weight:900}.fi-tbl td:first-child{border-radius:0 7px 7px 0}.fi-tbl td:last-child{border-radius:7px 0 0 7px;border-left:none}@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body>*:not(#fleet-invoice-modal){display:none!important}#fleet-inv-toolbar{display:none!important}#fleet-invoice-modal{position:static!important;inset:auto!important;background:#fff!important;padding:0!important;overflow:visible!important;display:block!important}#fleet-print-sheet{box-shadow:none!important;margin:0!important;width:100%!important;max-width:100%!important}}';
 document.head.appendChild(printStyle);
 
 const invModal = document.createElement('div');
@@ -4291,82 +4291,50 @@ document.body.appendChild(invModal);
 
 function getFleetInvoiceData() {
   const captains = { 'البركة 1': 'أحمد همد', 'البركة 2': 'عمر', 'البركة 3': 'عبد الله', 'البركة 4': 'احمد سالك' };
-  const cand = Array.from(document.querySelectorAll('#root button,#root [aria-selected="true"],#root .active,#root h1,#root h2,#root h3,#root span,#root div'));
-  const shipEl = cand.find(el => el.children.length === 0 && /^البركة\s*[1-4٠-٩]+$/.test(el.textContent.trim()) && (el.getAttribute('aria-selected') === 'true' || /active|selected/i.test(el.className) || /^H[1-3]$/.test(el.tagName))) || cand.find(el => el.children.length === 0 && /^البركة\s*[1-4٠-٩]+$/.test(el.textContent.trim()));
-  const ship = shipEl ? shipEl.textContent.trim() : '';
-  const sections = [], workers = [];
-  document.querySelectorAll('#root table').forEach((tbl, idx) => {
-    if (!tbl.offsetParent) return;
-    const headers = Array.from(tbl.querySelectorAll('thead th, tr:first-child th')).map(th => th.innerText.trim());
-    const rows = [];
-    tbl.querySelectorAll('tbody tr, tr').forEach((tr, rIdx) => {
-      if (rIdx === 0 && tr.querySelector('th')) return;
-      const cells = Array.from(tr.querySelectorAll('td')).map(td => { const i = td.querySelector('input,select'); return i ? i.value.trim() : td.innerText.trim(); });
-      if (cells.some(c => c !== '')) {
-        rows.push(cells);
-        const wName = cells.find(c => c && !/^[\d.,\s+-]+$/.test(c) && !/(المجموع|الإجمالي|مصاريف|المحروقات|المعاش)/.test(c));
-        if (wName) workers.push({ name: wName, headers, cells });
+  const norm = s => String(s || '').replace(/[١٢٣٤]/g, d => '1234'['١٢٣٤'.indexOf(d)]).replace(/\s+/g, ' ').trim();
+  let ship = '';
+  const cand = Array.from(document.querySelectorAll('#root button,#root [aria-selected="true"],#root .active,#root [data-active="true"],#root h1,#root h2,#root h3,#root span,#root div'));
+  const activeEl = cand.find(el => el.offsetParent && el.children.length === 0 && /^البركة\s*[1-4١-٤]$/.test(el.textContent.trim()) && (el.getAttribute('aria-selected') === 'true' \vert{}\vert{} el.getAttribute('data-active') === 'true' \vert{}\vert{} /active\vert{}selected\vert{}ring\vert{}border-teal\vert{}border-cyan\vert{}bg-teal\vert{}bg-cyan\vert{}bg-sky\vert{}bg-blue/i.test(el.className + ' ' + (el.parentElement ? el.parentElement.className : '')) \vert{}\vert{} /^H[1-3]$/.test(el.tagName)));
+  if (activeEl) ship = norm(activeEl.textContent);
+  let storeShip = null, storeRoot = null;
+  try {
+    for (const k of Object.keys(localStorage)) {
+      const raw = localStorage.getItem(k);
+      if (!raw || raw[0] !== '{') continue;
+      const obj = JSON.parse(raw);
+      if (!ship && typeof obj.activeShip === 'string' && /البركة/.test(obj.activeShip)) ship = norm(obj.activeShip);
+      if (!ship && typeof obj.selectedShip === 'string' && /البركة/.test(obj.selectedShip)) ship = norm(obj.selectedShip);
+      if (!ship && typeof obj.currentShip === 'string' && /البركة/.test(obj.currentShip)) ship = norm(obj.currentShip);
+      const shipsMap = obj.ships || obj.boats || obj.fleet || obj;
+      if (shipsMap && typeof shipsMap === 'object') {
+        const keys = Object.keys(shipsMap);
+        const matchKey = keys.find(sk => norm(sk) === ship) || keys.find(sk => /^البركة\s*[1-4١-٤]$/.test(norm(sk)));
+        if (matchKey && shipsMap[matchKey] && typeof shipsMap[matchKey] === 'object') {
+          if (!ship) ship = norm(matchKey);
+          storeShip = shipsMap[matchKey];
+          storeRoot = obj;
+          break;
+        }
       }
-    });
-    if (rows.length) sections.push({ title: 'جدول البيانات (' + (idx + 1) + ')', headers, rows });
-  });
-  if (!sections.length) {
-    const rowMap = new Map();
-    document.querySelectorAll('#root input').forEach(inp => {
-      if (!inp.offsetParent || inp.type === 'hidden') return;
-      const row = inp.closest('tr,li,[class*="row"],[class*="item"],[class*="card"]') || inp.parentElement.parentElement;
-      if (row && row.id !== 'root') { if (!rowMap.has(row)) rowMap.set(row, []); rowMap.get(row).push(inp); }
-    });
-    const itemRows = [], h = ['م', 'الاسم / البيان', 'القيم والكميات', 'المبلغ / الصافي'];
-    rowMap.forEach((inps, row) => {
-      const texts = Array.from(row.querySelectorAll('span,div,label,strong,b,p')).filter(el => el.children.length === 0 && el.innerText.trim()).map(el => el.innerText.trim());
-      const label = texts.find(t => !/^[\d.,\s+-]+$/.test(t)) || inps[0].placeholder || 'بند';
-      const vals = inps.map(i => (i.placeholder ? i.placeholder + ': ' : '') + (i.value || '0')).join(' | ');
-      const extra = texts.filter(t => t !== label && /\d/.test(t)).join(' | ') || '-';
-      const cells = [String(itemRows.length + 1).padStart(2, '0'), label, vals, extra];
-      itemRows.push(cells);
-      if (!/(المجموع|الإجمالي|مصاريف|المحروقات|المعاش|السفينة)/.test(label)) workers.push({ name: label, headers: h, cells });
-    });
-    if (itemRows.length) sections.push({ title: 'تفاصيل الحسابات والبنود', headers: h, rows: itemRows });
+    }
+  } catch (e) {}
+  if (!ship) {
+    const anyEl = cand.find(el => el.offsetParent && el.children.length === 0 && /^البركة\s*[1-4١-٤]$/.test(el.textContent.trim()));
+    ship = anyEl ? norm(anyEl.textContent) : 'البركة 1';
   }
-  const totals = [], seen = new Set();
-  document.querySelectorAll('#root div,#root span,#root p,#root li').forEach(el => {
-    if (!el.offsetParent || el.children.length > 3) return;
-    const txt = el.innerText.replace(/\s+/g, ' ').trim();
-    if (txt.length > 4 && txt.length < 70 && /(إجمالي|مجموع|صافي|الباقي|المستحق|المصاريف|الديون)/.test(txt) && /\d/.test(txt) && !seen.has(txt)) { seen.add(txt); totals.push(txt); }
-  });
-  return { ship, captain: captains[ship] || '', sections, workers, totals: totals.slice(0, 6) };
-}
-
-function renderFleetInvoice(data, selIdx) {
-  const d = new Date(), dateStr = d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
-  const isWorker = selIdx !== 'ALL' && data.workers[selIdx];
-  const w = isWorker ? data.workers[selIdx] : null;
-  let bodyHtml = '', totHtml = '';
-  if (isWorker) {
-    const pairs = w.cells.map((c, i) => '<tr><td>' + String(i + 1).padStart(2, '0') + '</td><td>' + (w.headers[i] || 'بيان ' + (i + 1)) + '</td><td>' + c + '</td></tr>').join('');
-    bodyHtml = '<div style="font-size:13px;font-weight:900;color:#062c43;margin:8px 0 4px;">تفاصيل وضعية العامل: ' + w.name + '</div><table class="fi-tbl"><thead><tr><th>م</th><th>البيان</th><th>القيمة / المبلغ</th></tr></thead><tbody>' + pairs + '</tbody></table>';
-    totHtml = '<div style="background:#0d9488!important;color:#fff!important;padding:8px 14px;border-radius:8px;font-weight:900;font-size:13px;">صافي مستحقات العامل: <span contenteditable="true">' + (w.cells[w.cells.length - 1] || '0') + '</span></div>';
-  } else {
-    bodyHtml = data.sections.length ? data.sections.map(s => '<div style="font-size:13px;font-weight:900;color:#062c43;margin:8px 0 4px;">' + s.title + '</div><table class="fi-tbl">' + (s.headers.length ? '<thead><tr>' + s.headers.map(h => '<th>' + h + '</th>').join('') + '</tr></thead>' : '') + '<tbody>' + s.rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</tbody></table>').join('') : '<table class="fi-tbl"><thead><tr><th>م</th><th>البيان</th><th>الكمية</th><th>المبلغ</th></tr></thead><tbody><tr><td>01</td><td contenteditable="true">حساب الرحلة</td><td contenteditable="true">-</td><td contenteditable="true">0</td></tr></tbody></table>';
-    totHtml = data.totals.length ? data.totals.map((t, i) => i === data.totals.length - 1 ? '<div style="background:#0d9488!important;color:#fff!important;padding:8px 14px;border-radius:8px;font-weight:900;font-size:13px;margin-top:6px;">' + t + '</div>' : '<div style="font-size:12px;font-weight:800;color:#062c43;padding:3px 0;border-bottom:1px dashed #cbd5e1;">' + t + '</div>').join('') : '<div style="background:#0d9488!important;color:#fff!important;padding:8px 14px;border-radius:8px;font-weight:900;font-size:13px;">الصافي المستحق: ............</div>';
-  }
-  const opts = '<option value="ALL"' + (!isWorker ? ' selected' : '') + '>كشف السفينة الكامل</option>' + data.workers.map((wk, idx) => '<option value="' + idx + '"' + (String(selIdx) === String(idx) ? ' selected' : '') + '>وضعية العامل: ' + wk.name + '</option>').join('');
-  const infoLeft = isWorker ? '<div><strong>اسم العامل:</strong> <span contenteditable="true" style="color:#0d9488;font-weight:900;border-bottom:1.5px dotted #0d9488;padding:0 8px;">' + w.name + '</span></div><div><strong>السفينة:</strong> <span contenteditable="true">' + (data.ship || 'البركة') + '</span></div><div><strong>الربان:</strong> <span contenteditable="true">' + (data.captain || '........') + '</span></div>' : '<div><strong>اسم السفينة:</strong> <span contenteditable="true" style="color:#0d9488;font-weight:900;border-bottom:1.5px dotted #0d9488;padding:0 8px;">' + (data.ship || 'البركة') + '</span></div><div><strong>الربان:</strong> <span contenteditable="true">' + (data.captain || '........') + '</span></div><div><strong>الرحلة رقم:</strong> <span contenteditable="true">........</span></div>';
-  invModal.innerHTML = '<div id="fleet-inv-toolbar"><select id="fi-worker-sel" style="padding:7px 10px;border-radius:8px;border:1px solid #0d9488;background:#fff;color:#062c43;font-weight:800;font-size:12px;max-width:190px;">' + opts + '</select><div style="display:flex;gap:6px;"><button id="fi-do-print" style="background:#0d9488;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;">طباعة / PDF</button><button id="fi-close" style="background:#ef4444;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;">إغلاق</button></div></div><div id="fleet-print-sheet"><div style="position:relative;height:28px;background:#062c43!important;"><div style="position:absolute;top:0;left:0;width:160px;height:28px;background:#0d9488!important;clip-path:polygon(0 0,100% 0,78% 100%,0 100%);"></div></div><div style="padding:16px 22px 10px;"><div style="text-align:center;margin-bottom:12px;"><svg width="52" height="52" viewBox="0 0 64 64" style="margin:0 auto 4px;display:block;"><rect x="14" y="14" width="36" height="36" fill="none" stroke="#0d9488" stroke-width="3"/><rect x="14" y="14" width="36" height="36" transform="rotate(45 32 32)" fill="none" stroke="#062c43" stroke-width="3"/><circle cx="32" cy="32" r="7" fill="#0d9488"/></svg><div style="font-size:20px;font-weight:900;color:#062c43;">أسطول البركة للصيد التقليدي</div><div style="font-size:11px;font-weight:800;color:#0d9488;">' + (isWorker ? 'كشف وضعية عامل / بحار' : 'فاتورة وكشف حساب رحلة صيد') + '</div></div><div style="display:flex;justify-content:space-between;gap:14px;background:#f0fdfa!important;border-right:4px solid #0d9488;border-left:4px solid #062c43;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;"><div style="line-height:1.9;">' + infoLeft + '</div><div style="line-height:1.9;text-align:left;"><div style="font-size:16px;font-weight:900;color:#062c43;">' + (isWorker ? 'كشف فردي' : 'كشف حساب') + '</div><div><strong>التاريخ:</strong> ' + dateStr + '</div><div><strong>الميناء:</strong> <span contenteditable="true">انواذيبو</span></div></div></div>' + bodyHtml + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-top:10px;"><div style="flex:1;font-size:11px;color:#475569;line-height:1.6;"><strong>ملاحظات:</strong> تُعتمد هذه الورقة ككشف رسمي بعد مراجعة أوزان وأصناف المصيد (F / R / P / RR) وخصم المصاريف والسلفيات.</div><div style="min-width:210px;">' + totHtml + '</div></div><div style="display:flex;justify-content:space-between;padding:22px 16px 8px;"><div style="text-align:center;min-width:140px;"><div style="border-bottom:1.5px solid #062c43;height:32px;margin-bottom:4px;"></div><div style="font-size:13px;font-weight:900;color:#062c43;">توقيع المسير</div></div><div style="text-align:center;min-width:140px;"><div style="border-bottom:1.5px solid #0d9488;height:32px;margin-bottom:4px;"></div><div style="font-size:13px;font-weight:900;color:#0d9488;">' + (isWorker ? 'توقيع العامل' : 'توقيع الربان') + '</div></div></div><div style="display:flex;justify-content:center;gap:22px;padding:6px 0 2px;border-top:1px solid #ccfbf1;font-size:11.5px;font-weight:800;color:#062c43;"><span>☎ الهاتف: <span contenteditable="true">....................</span></span><span>⌖ العنوان: <span contenteditable="true">انواذيبو - موريتانيا</span></span></div></div><div style="position:relative;height:22px;background:#062c43!important;"><div style="position:absolute;bottom:0;right:0;width:160px;height:22px;background:#0d9488!important;clip-path:polygon(22% 0,100% 0,100% 100%,0 100%);"></div></div></div>';
-  document.getElementById('fi-worker-sel').onchange = (e) => renderFleetInvoice(data, e.target.value);
-  document.getElementById('fi-close').onclick = () => invModal.classList.remove('open');
-  document.getElementById('fi-do-print').onclick = () => window.print();
-}
-
-const printBtn = document.createElement('button');
-printBtn.id = 'fleet-print-fab';
-printBtn.title = 'معاينة وطباعة الفاتورة';
-printBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span style="font-size:13px;font-weight:800;color:#ffffff;">طباعة</span>';
-printBtn.style.cssText = 'position:fixed!important;bottom:124px!important;right:16px!important;width:auto!important;height:44px!important;padding:0 14px!important;border-radius:999px!important;border:1px solid rgba(255,255,255,0.45)!important;background:linear-gradient(135deg,rgba(15,41,66,0.46),rgba(2,132,199,0.32))!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;box-shadow:0 6px 18px rgba(15,41,66,0.18),inset 0 1px 1px rgba(255,255,255,0.45)!important;z-index:9998;cursor:pointer;';
-printBtn.onclick = () => { renderFleetInvoice(getFleetInvoiceData(), 'ALL'); invModal.classList.add('open'); };
-document.body.appendChild(printBtn);
-
+  const sections = [], workers = [], pricesInfo = [];
+  const fmt = n => (Number(n) || 0).toLocaleString('en-US');
+  if (storeShip) {
+    const pSailor = storeShip.sailorPrices || storeShip.prices || (storeRoot && (storeRoot.sailorPrices || storeRoot.prices)) || {};
+    const pSale = storeShip.salePrices || (storeRoot && storeRoot.salePrices) || {};
+    ['F', 'R', 'P', 'RR'].forEach(g => {
+      if (pSailor[g] != null || pSale[g] != null) pricesInfo.push(g + ': ' + (pSailor[g] != null ? 'بحار ' + fmt(pSailor[g]) : '') + (pSale[g] != null ? ' / بيع ' + fmt(pSale[g]) : ''));
+    });
+    const crewArr = storeShip.sailors || storeShip.crew || storeShip.workers || storeShip.members || [];
+    if (Array.isArray(crewArr) && crewArr.length) {
+      const h = ['م', 'الاسم (الطاقم)', 'F', 'R', 'P', 'RR', 'الإنتاج', 'الدين/السلفة', 'الصافي'];
+      let tF = 0, tR = 0, tP = 0, tRR = 0, tProd = 0, tDebt = 0, tNet = 0;
+      
   const overlay = document.createElement('div');
   
   overlay.id = 'fleet-ai-overlay';
