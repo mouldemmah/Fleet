@@ -4301,11 +4301,13 @@
       <div class="fai-msgs" id="fai-msgs">
         <div class="fai-msg ai">أهلاً بك! اضغط على الميكروفون 🎙️ وتحدّث للسؤال عن الحسابات أو لتسجيل سلفة أو إنتاج أو مصروف.</div>
       </div>
-      <div class="fai-bar">
-        <button id="fai-mic" title="تحدث الآن">🎙️</button>
-        <input id="fai-input" type="text" placeholder="تحدث أو اكتب طلبك هنا...">
-        <button id="fai-send">إرسال</button>
-      </div>
+        <div class="fai-bar" style="flex-direction:column;align-items:stretch;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;width:100%;">
+      <input id="fai-input" type="text" placeholder="تحدث أو اكتب طلبك هنا...">
+      <button id="fai-send">إرسال</button>
+    </div>
+    <button id="fai-mic" title="تحدث الآن" style="width:66px;height:66px;margin:2px auto 0;font-size:28px;display:flex;align-items:center;justify-content:center;">🎙️</button>
+  </div>
     </div>
   `;
   document.body.appendChild(overlay);
