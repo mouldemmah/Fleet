@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fleet-app-v3';
+const CACHE_NAME = 'fleet-app-v4';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-512.png.png'];
 
 self.addEventListener('install', (e) => {
