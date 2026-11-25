@@ -1,0 +1,17 @@
+{
+  "name": "إدارة الأسطول",
+  "short_name": "الأسطول",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f2942",
+  "theme_color": "#0f2942",
+  "icons": [
+    {
+      "src": "icon-512.png.png",
+      "sizes": "192x192 512x512 1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
